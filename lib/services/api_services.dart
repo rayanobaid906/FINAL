@@ -2,13 +2,14 @@ import 'package:dio/dio.dart';
 import 'package:fix_it/token_storage.dart';
 import 'package:fix_it/models/specialization_model.dart';
 import 'package:fix_it/models/order_model.dart';
+
 class ApiService {
   final TokenStorage tokenStorage = TokenStorage();
 
   late final Dio dio =
       Dio(
           BaseOptions(
-            baseUrl: 'http://192.168.1.105:5154/api/',
+            baseUrl: 'http://192.168.34.80:5154/api/',
             headers: {'Content-Type': 'application/json'},
           ),
         )
@@ -114,34 +115,44 @@ class ApiService {
       },
     );
   }
+
   Future<List<OrderModel>> getMyOrders() async {
-  final response = await dio.get('orders/my');
+    final response = await dio.get('orders/my');
 
-  final List<dynamic> data = response.data;
+    final List<dynamic> data = response.data;
 
-  return data
-      .map(
-        (item) => OrderModel.fromJson(
-          item as Map<String, dynamic>,
-        ),
-      )
-      .toList();
-}
+    return data
+        .map((item) => OrderModel.fromJson(item as Map<String, dynamic>))
+        .toList();
+  }
 
+  Future<OrderModel> getOrderById(int id) async {
+    final response = await dio.get('orders/$id');
 
+    return OrderModel.fromJson(response.data as Map<String, dynamic>);
+  }
 
-Future<OrderModel> getOrderById(int id) async {
-  final response = await dio.get('orders/$id');
+  Future<void> cancelOrder(int orderId) async {
+    await dio.patch('orders/$orderId/cancel');
+  }
 
-  return OrderModel.fromJson(
-    response.data as Map<String, dynamic>,
-  );
-}
-Future<void> cancelOrder(int orderId) async {
-  await dio.patch(
-    'orders/$orderId/cancel',
-  );
-}
-
-
+  Future<Response> updateOrder({
+    required int orderId,
+    required int specializationId,
+    required String description,
+    required double latitude,
+    required double longitude,
+    required String addressText,
+  }) async {
+    return await dio.put(
+      'orders/$orderId',
+      data: {
+        'specializationId': specializationId,
+        'description': description,
+        'latitude': latitude,
+        'longitude': longitude,
+        'addressText': addressText,
+      },
+    );
+  }
 }

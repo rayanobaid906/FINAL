@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fix_it/app_colors.dart';
 import 'package:fix_it/providers/order_provider.dart';
+import 'package:fix_it/create_order.dart';
 
 class OrderDetailsPage extends StatefulWidget {
   final int orderId;
@@ -223,6 +224,41 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                                 ),
                         );
                       },
+                    ),
+                  ),
+                  SizedBox(height: 12,),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        final result = await Navigator.push<bool>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CreateOrder(order: order),
+                          ),
+                        );
+
+                        if (result == true && context.mounted) {
+                          context.read<OrderProvider>().getOrderById(order.id);
+                        }
+                      },
+                      
+                      icon: const Icon(Icons.edit_rounded),
+                      label: const Text(
+                        'تعديل الطلب',
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
                     ),
                   ),
                 ],

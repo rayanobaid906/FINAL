@@ -1,3 +1,4 @@
+import 'package:fix_it/models/order_model.dart';
 import 'package:flutter/material.dart';
 import 'package:fix_it/app_colors.dart';
 // import 'package:graduation/app_colors.dart';i
@@ -7,7 +8,8 @@ import 'package:provider/provider.dart';
 import 'package:fix_it/providers/order_provider.dart';
 
 class CreateOrder extends StatefulWidget {
-  const CreateOrder({super.key});
+ final OrderModel? order ;
+  const CreateOrder({super.key,this.order});
 
   @override
   State<CreateOrder> createState() => _CreateOrderScreenState();
@@ -15,6 +17,7 @@ class CreateOrder extends StatefulWidget {
 
 class _CreateOrderScreenState extends State<CreateOrder> {
   final _formKey = GlobalKey<FormState>();
+  bool get isEditMode => widget.order != null;
   LatLng? _selectedLocation;
 
   // String? _selectedSpecialization;
@@ -35,16 +38,33 @@ class _CreateOrderScreenState extends State<CreateOrder> {
   // bool _isLoadingSpecializations = true;
   // String? _specializationsError;
   @override
-  void initState() {
-    super.initState();
+void initState() {
+  super.initState();
 
-    print("INIT STATE");
+  final order = widget.order;
 
-    Future.microtask(() {
-      print("CALLING PROVIDER");
-      context.read<OrderProvider>().getSpecializations();
-    });
+  if (order != null) {
+    _selectedSpecializationId = order.specializationId;
+
+    _titleController.text = order.description.split('\n').first;
+
+    _descriptionController.text =
+        order.description.contains('\n')
+            ? order.description.substring(
+                order.description.indexOf('\n') + 1,
+              )
+            : order.description;
+
+    _selectedLocation = LatLng(
+      order.latitude,
+      order.longitude,
+    );
   }
+
+  Future.microtask(() {
+    context.read<OrderProvider>().getSpecializations();
+  });
+}
 
   @override
   void dispose() {
@@ -442,62 +462,81 @@ class _CreateOrderScreenState extends State<CreateOrder> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: ElevatedButton(
-                    onPressed: () async {
-                      if (!_formKey.currentState!.validate()) {
-                        return;
-                      }
+                   onPressed: () async {
+  if (!_formKey.currentState!.validate()) {
+    return;
+  }
 
-                      if (_selectedLocation == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'الرجاء اختيار الموقع',
-                              style: TextStyle(fontFamily: 'Cairo'),
-                            ),
-                          ),
-                        );
-                        return;
-                      }
+  if (_selectedLocation == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'الرجاء اختيار الموقع',
+          style: TextStyle(fontFamily: 'Cairo'),
+        ),
+        backgroundColor: Colors.red,
+      ),
+    );
+    return;
+  }
 
-                      final orderProvider = context.read<OrderProvider>();
+  final orderProvider = context.read<OrderProvider>();
 
-                      final success = await orderProvider.createOrder(
-                        specializationId: _selectedSpecializationId!,
-                        description:
-                            '${_titleController.text.trim()}\n${_descriptionController.text.trim()}',
-                        latitude: _selectedLocation!.latitude,
-                        longitude: _selectedLocation!.longitude,
-                        addressText: 'موقع محدد من الخريطة',
-                      );
+  final description =
+      '${_titleController.text.trim()}\n${_descriptionController.text.trim()}';
 
-                      if (!mounted) return;
+  bool success;
 
-                      if (success) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'تم إنشاء الطلب بنجاح',
-                              style: TextStyle(fontFamily: 'Cairo'),
-                            ),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
+  if (isEditMode) {
+    success = await orderProvider.updateOrder(
+      orderId: widget.order!.id,
+      specializationId: _selectedSpecializationId!,
+      description: description,
+      latitude: _selectedLocation!.latitude,
+      longitude: _selectedLocation!.longitude,
+      addressText:
+          widget.order!.addressText ?? 'موقع محدد من الخريطة',
+    );
+  } else {
+    success = await orderProvider.createOrder(
+      specializationId: _selectedSpecializationId!,
+      description: description,
+      latitude: _selectedLocation!.latitude,
+      longitude: _selectedLocation!.longitude,
+      addressText: 'موقع محدد من الخريطة',
+    );
+  }
 
-                        //Navigator.pop(context, true);
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              orderProvider.createOrderError ??
-                                  'فشل إنشاء الطلب',
-                              style: const TextStyle(fontFamily: 'Cairo'),
-                            ),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    },
+  if (!mounted) return;
 
+  if (success) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isEditMode
+              ? 'تم تعديل الطلب بنجاح'
+              : 'تم إنشاء الطلب بنجاح',
+          style: const TextStyle(fontFamily: 'Cairo'),
+        ),
+        backgroundColor: Colors.green,
+      ),
+    );
+
+    Navigator.pop(context, true);
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isEditMode
+              ? orderProvider.updateOrderError ?? 'فشل تعديل الطلب'
+              : orderProvider.createOrderError ?? 'فشل إنشاء الطلب',
+          style: const TextStyle(fontFamily: 'Cairo'),
+        ),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+},
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors
                           .transparent, // to make the gradient visible (شفافة)
