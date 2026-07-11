@@ -1,4 +1,6 @@
 import 'package:fix_it/create_order.dart';
+import 'package:fix_it/main_page.dart';
+import 'package:fix_it/providers/order_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fix_it/login_page.dart';
@@ -15,6 +17,7 @@ void main() {
         ChangeNotifierProvider(
           create: (_) => AuthProvider(),
         ),
+        ChangeNotifierProvider(create: (_)=>OrderProvider())
       ],
       child: MyApp(),
     ),
@@ -29,7 +32,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: (CreateOrder()),
+      home: (MainPage()),
       
       
       routes: {

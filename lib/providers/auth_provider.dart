@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 // import 'hoe/services/api_service.dart';
 import 'package:fix_it/services/api_services.dart';
-
+import 'package:dio/dio.dart';
 class AuthProvider extends ChangeNotifier {
 
   final ApiService apiService = ApiService();
@@ -21,12 +21,16 @@ Future<bool> login(String email, String password) async {
     return true;
 
   } catch (e) {
+  if (e is DioException) {
+    debugPrint('LOGIN STATUS: ${e.response?.statusCode}');
+    debugPrint('LOGIN DATA: ${e.response?.data}');
+    debugPrint('LOGIN MESSAGE: ${e.message}');
+  } else {
+    debugPrint('LOGIN ERROR: $e');
+  }
 
-    print("LOGIN ERROR: $e");
-
-    return false;
-
-  } finally {
+  return false;
+} finally {
 
     isLoading = false;
     notifyListeners();

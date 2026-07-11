@@ -3,6 +3,8 @@ import 'package:fix_it/app_colors.dart';
 // import 'package:graduation/app_colors.dart';i
 import 'package:latlong2/latlong.dart';
 import 'package:fix_it/location_picker_page.dart';
+import 'package:provider/provider.dart';
+import 'package:fix_it/providers/order_provider.dart';
 
 class CreateOrder extends StatefulWidget {
   const CreateOrder({super.key});
@@ -14,16 +16,35 @@ class CreateOrder extends StatefulWidget {
 class _CreateOrderScreenState extends State<CreateOrder> {
   final _formKey = GlobalKey<FormState>();
   LatLng? _selectedLocation;
-  String? _selectedSpecialization;
+
+  // String? _selectedSpecialization;
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
-  final List<String> _specializations = [
-    "كهرباء",
-    "سباكة",
-    "أجهزة منزلية",
-    "تكييف وتبريد",
-  ];
+  // final List<String> _specializations = [
+  //   "كهرباء",
+  //   "سباكة",
+  //   "أجهزة منزلية",
+  //   "تكييف وتبريد",
+  // ];
+  // final ApiService _apiService = ApiService();
+
+  // List<SpecializationModel> _specializations = [];
+  int? _selectedSpecializationId;
+
+  // bool _isLoadingSpecializations = true;
+  // String? _specializationsError;
+  @override
+  void initState() {
+    super.initState();
+
+    print("INIT STATE");
+
+    Future.microtask(() {
+      print("CALLING PROVIDER");
+      context.read<OrderProvider>().getSpecializations();
+    });
+  }
 
   @override
   void dispose() {
@@ -111,75 +132,117 @@ class _CreateOrderScreenState extends State<CreateOrder> {
                 ),
               ),
               const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                value: _selectedSpecialization,
-                hint: const Text(
-                  "اختر التخصص من القائمة",
-                  style: TextStyle(
-                    fontFamily: 'Cairo',
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                  ),
-                ), // to make like placeholder in the text field
-                dropdownColor: AppColors.surface,
-                icon: const Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: AppColors
-                      .primary, // to shoose the color of the icon in the dropdown
-                ),
-                decoration: InputDecoration(
-                  errorStyle: const TextStyle(
-                    fontFamily: 'Cairo',
-                    fontSize: 12,
-                    color: Color.fromARGB(255, 185, 54, 54),
-                  ),
-                  fillColor: AppColors.surface,
-                  filled: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide(
-                      color: AppColors.primary.withOpacity(0.05),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(
-                      color: AppColors.primary,
-                      width: 1.5,
-                    ),
-                  ),
-                ),
-                items: _specializations.map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(
-                      value,
-                      style: const TextStyle(
+
+              Consumer<OrderProvider>(
+                builder: (context, orderProvider, child) {
+                  if (orderProvider.isLoadingSpecializations) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (orderProvider.errorMessage != null) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          orderProvider.errorMessage!,
+                          style: const TextStyle(
+                            fontFamily: 'Cairo',
+                            color: Colors.red,
+                          ),
+                        ),
+
+                        TextButton(
+                          onPressed: () {
+                            context.read<OrderProvider>().getSpecializations();
+                          },
+                          child: const Text('إعادة المحاولة'),
+                        ),
+                      ],
+                    );
+                  }
+                  if (orderProvider.specializations.isEmpty) {
+                    return const Text(
+                      'لا توجد تخصصات متاحة حاليًا',
+                      style: TextStyle(
                         fontFamily: 'Cairo',
-                        fontSize: 14,
-                        color: AppColors.textPrimary,
+                        color: AppColors.textSecondary,
+                      ),
+                    );
+                  }
+
+                  return DropdownButtonFormField<int>(
+                    value: _selectedSpecializationId,
+                    hint: const Text(
+                      "اختر التخصص من القائمة",
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
                       ),
                     ),
-                  );
-                }).toList(),
-                onChanged: (newValue) {
-                  setState(() {
-                    _selectedSpecialization = newValue;
-                  });
-                },
-                validator: (value) => value == null
-                    ? "الرجاء اختيار التخصص أولاً"
-                    : null, // to oblige the user choose one of spec
-              ),
+                    dropdownColor: AppColors.surface,
+                    icon: const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: AppColors.primary,
+                    ),
+                    decoration: InputDecoration(
+                      errorStyle: const TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 12,
+                        color: Color.fromARGB(255, 185, 54, 54),
+                      ),
+                      fillColor: AppColors.surface,
+                      filled: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(
+                          color: AppColors.primary.withOpacity(0.05),
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(
+                          color: AppColors.primary,
+                          width: 1.5,
+                        ),
+                      ),
+                    ),
+                    items: orderProvider.specializations.map((specialization) {
+                      return DropdownMenuItem<int>(
+                        value: specialization.id,
+                        child: Text(
+                          specialization.name,
+                          style: const TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 14,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedSpecializationId = value;
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null) {
+                        return "الرجاء اختيار التخصص أولاً";
+                      }
 
+                      return null;
+                    },
+                  );
+                },
+              ),
               const SizedBox(height: 20),
 
               // 2. حقل عنوان الطلب
@@ -379,40 +442,62 @@ class _CreateOrderScreenState extends State<CreateOrder> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!
-                          .validate()) // to chake of all the validtor in the top
-                      {
-                        if (_selectedLocation == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                "الرجاء اختيار الموقع",
-                                style: TextStyle(fontFamily: 'Cairo'),
-                              ),
-                            ),
-                          );
+                    onPressed: () async {
+                      if (!_formKey.currentState!.validate()) {
+                        return;
+                      }
 
-                          return;
-                        }
-
-                        print("التخصص: $_selectedSpecialization");
-                        print("العنوان: ${_titleController.text}");
-                        print("الوصف: ${_descriptionController.text}");
-                        print("Latitude: ${_selectedLocation!.latitude}");
-                        print("Longitude: ${_selectedLocation!.longitude}");
-
+                      if (_selectedLocation == null) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text(
-                              "جاري نشر طلبك الآن...",
+                              'الرجاء اختيار الموقع',
                               style: TextStyle(fontFamily: 'Cairo'),
                             ),
-                            backgroundColor: AppColors.primary,
+                          ),
+                        );
+                        return;
+                      }
+
+                      final orderProvider = context.read<OrderProvider>();
+
+                      final success = await orderProvider.createOrder(
+                        specializationId: _selectedSpecializationId!,
+                        description:
+                            '${_titleController.text.trim()}\n${_descriptionController.text.trim()}',
+                        latitude: _selectedLocation!.latitude,
+                        longitude: _selectedLocation!.longitude,
+                        addressText: 'موقع محدد من الخريطة',
+                      );
+
+                      if (!mounted) return;
+
+                      if (success) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'تم إنشاء الطلب بنجاح',
+                              style: TextStyle(fontFamily: 'Cairo'),
+                            ),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+
+                        //Navigator.pop(context, true);
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              orderProvider.createOrderError ??
+                                  'فشل إنشاء الطلب',
+                              style: const TextStyle(fontFamily: 'Cairo'),
+                            ),
+                            backgroundColor: Colors.red,
                           ),
                         );
                       }
                     },
+
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors
                           .transparent, // to make the gradient visible (شفافة)
@@ -422,14 +507,29 @@ class _CreateOrderScreenState extends State<CreateOrder> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    child: const Text(
-                      "نشر الطلب الآن",
-                      style: TextStyle(
-                        fontFamily: 'Cairo',
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                    child: Consumer<OrderProvider>(
+                      builder: (context, orderProvider, child) {
+                        if (orderProvider.isCreatingOrder) {
+                          return const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          );
+                        }
+
+                        return const Text(
+                          'نشر الطلب الآن',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
