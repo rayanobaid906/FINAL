@@ -220,4 +220,36 @@ class OrderProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+List<OrderModel> assignedProviderOrders = [];
+
+bool isLoadingAssignedProviderOrders = false;
+
+String? assignedProviderOrdersError;
+
+Future<void> getAssignedProviderOrders() async {
+  try {
+    isLoadingAssignedProviderOrders = true;
+    assignedProviderOrdersError = null;
+    notifyListeners();
+
+    assignedProviderOrders =
+        await apiService.getAssignedProviderOrders();
+
+    debugPrint(
+      'ASSIGNED PROVIDER ORDERS COUNT: '
+      '${assignedProviderOrders.length}',
+    );
+  } catch (e) {
+    assignedProviderOrdersError =
+        'فشل تحميل الطلبات المسندة';
+
+    debugPrint(
+      'ASSIGNED PROVIDER ORDERS ERROR: $e',
+    );
+  } finally {
+    isLoadingAssignedProviderOrders = false;
+    notifyListeners();
+  }
+}
+
 }

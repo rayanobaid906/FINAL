@@ -194,4 +194,20 @@ Future<List<OrderModel>> getAvailableProviderOrders() async {
       )
       .toList();
 }
+Future<List<OrderModel>> getAssignedProviderOrders() async {
+  final response = await dio.get(
+    'provider/orders/assigned',
+  );
+
+  final List<dynamic> data = response.data;
+
+  return data
+      .map(
+        (item) => OrderModel.fromJson(
+          item as Map<String, dynamic>,
+        ),
+      )
+      .toList();
+}
+
 }
