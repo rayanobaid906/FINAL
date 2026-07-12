@@ -1,8 +1,11 @@
+import 'package:fix_it/provider_main_page.dart';
+import 'package:fix_it/providers/provider_profile_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:fix_it/app_colors.dart';
 import 'package:fix_it/home_page.dart';
 import 'package:fix_it/to_be_provider.dart';
 import 'package:fix_it/order_situation.dart';
+import 'package:provider/provider.dart';
 // import 'package:google_nav_bar/google_nav_bar.dart';
 // import 'package:persistent_bottom_nav_bar_v2/persistent_bottom_nav_bar_v2.dart';
 
@@ -195,10 +198,38 @@ class _MainPageState extends State<MainPage> {
                       color: AppColors.primary,
                       size: 14,
                     ),
-                   onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => ToBeProvider()),
-                  ),
+                        
+onTap: () async {
+  Navigator.pop(context);
+
+  final providerProfile =
+      context.read<ProviderProfileProvider>();
+
+  final hasProfile =
+      await providerProfile.checkProviderProfile();
+
+  if (!context.mounted) return;
+
+  if (hasProfile) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const ProviderMainPage(),
+      ),
+    );
+  } else {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const ToBeProvider(),
+      ),
+    );
+  }
+},
+
+
+
+
                 ),
               ),
               ),

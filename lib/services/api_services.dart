@@ -1,34 +1,35 @@
 import 'package:dio/dio.dart';
+import 'package:fix_it/models/provider_profile_model.dart';
 import 'package:fix_it/token_storage.dart';
 import 'package:fix_it/models/specialization_model.dart';
 import 'package:fix_it/models/order_model.dart';
 
 class ApiService {
-  final TokenStorage tokenStorage = TokenStorage();
+  final TokenStorage tokenStorage = TokenStorage();  //*this is instance of token 
 
   late final Dio dio =
       Dio(
           BaseOptions(
-            baseUrl: 'http://192.168.34.80:5154/api/',
-            headers: {'Content-Type': 'application/json'},
+            baseUrl: 'http://192.168.1.105:5154/api/', //*this is the base url of back end 
+            headers: {'Content-Type': 'application/json'},  //* this is the format of data 
           ),
         )
         ..interceptors.add(
           InterceptorsWrapper(
             onRequest: (options, handler) async {
-              final token = await tokenStorage.getAccessToken();
+              final token = await tokenStorage.getAccessToken();   //* before get anything he get accesstoken 
 
               print('REQUEST URL: ${options.baseUrl}${options.path}');
               print('TOKEN SENT: $token');
 
-              if (token != null && token.isNotEmpty) {
+              if (token != null && token.isNotEmpty) {      //* that mean if have token put it in the headers 
                 options.headers['Authorization'] = 'Bearer $token';
               }
 
               print('REQUEST HEADERS: ${options.headers}');
               print('REQUEST DATA: ${options.data}');
 
-              return handler.next(options);
+              return handler.next(options);   //* this is the end of interceptors
             },
           ),
         );
@@ -155,4 +156,42 @@ class ApiService {
       },
     );
   }
+
+
+  Future<ProviderProfileModel> getMyProviderProfile() async {
+  final response = await dio.get(
+    'provider-profile/me',
+  );
+
+  return ProviderProfileModel.fromJson(
+    response.data as Map<String, dynamic>,
+  );
+}
+Future<Response> createProviderProfile({
+  required int specializationId,
+  String? bio,
+}) async {
+  return await dio.post(
+    'provider-profile',
+    data: {
+      'specializationId': specializationId,
+      'bio': bio,
+    },
+  );
+}
+Future<List<OrderModel>> getAvailableProviderOrders() async {
+  final response = await dio.get(
+    'provider/orders/available',
+  );
+
+  final List<dynamic> data = response.data;
+
+  return data
+      .map(
+        (item) => OrderModel.fromJson(
+          item as Map<String, dynamic>,
+        ),
+      )
+      .toList();
+}
 }

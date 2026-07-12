@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fix_it/app_colors.dart';
+import 'package:provider/provider.dart';
+import 'package:fix_it/providers/order_provider.dart';
+import 'package:fix_it/providers/provider_profile_provider.dart';
+import 'package:fix_it/provider_main_page.dart';
+
 class ToBeProvider extends StatefulWidget {
   const ToBeProvider({super.key});
 
@@ -10,18 +15,19 @@ class ToBeProvider extends StatefulWidget {
 class _ToBeProvider extends State<ToBeProvider> {
   final _formKey = GlobalKey<FormState>();
 
-
-  String? _selectedSpecialization; // يختار تخصصاً فعالاً واحداً
   final TextEditingController _bioController =
       TextEditingController(); // حقل اختياري Bio (nullable)
 
   // التخصصات الأربعة المعتمدة رسمياً في مستند المشروع (صفحة 4)
-  final List<String> _specializations = [
-    "كهرباء",
-    "سباكة",
-    "أجهزة منزلية",
-    "تكييف وتبريد",
-  ];
+  int? _selectedSpecializationId;
+  @override
+  void initState() {
+    super.initState();
+
+    Future.microtask(() {
+      context.read<OrderProvider>().getSpecializations();
+    });
+  }
 
   @override
   void dispose() {
@@ -56,7 +62,7 @@ class _ToBeProvider extends State<ToBeProvider> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(200.0),
+        padding: const EdgeInsets.all(20.0),
         child: Form(
           key: _formKey,
           child: Column(
@@ -73,76 +79,107 @@ class _ToBeProvider extends State<ToBeProvider> {
                 ),
               ),
               const SizedBox(height: 8),
+              Consumer<OrderProvider>(
+                builder: (context, orderProvider, child) {
+                  if (orderProvider.isLoadingSpecializations) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-              // حقل القائمة المنسدلة لاختيار التخصص (مطلوب)
-              DropdownButtonFormField<String>(
-                value: _selectedSpecialization,
-                hint: const Text(
-                  "اضغط لاختيار تخصصك المهني",
-                  style: TextStyle(
-                    fontFamily: 'Cairo',
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                dropdownColor: AppColors.surface,
-                icon: const Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: AppColors.primary,
-                ),
-                decoration: InputDecoration(
-                  fillColor: AppColors.surface,
-                  filled: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide(
-                      color: AppColors.primary.withOpacity(0.05),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(
-                      color: AppColors.primary,
-                      width: 1.5,
-                    ),
-                  ),
-                ),
-                items: _specializations.map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(
-                      value,
-                      style: const TextStyle(
+                  if (orderProvider.errorMessage != null) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          orderProvider.errorMessage!,
+                          style: const TextStyle(
+                            fontFamily: 'Cairo',
+                            color: Colors.red,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            context.read<OrderProvider>().getSpecializations();
+                          },
+                          child: const Text('إعادة المحاولة'),
+                        ),
+                      ],
+                    );
+                  }
+
+                  return DropdownButtonFormField<int>(
+                    value: _selectedSpecializationId,
+                    hint: const Text(
+                      "اضغط لاختيار تخصصك المهني",
+                      style: TextStyle(
                         fontFamily: 'Cairo',
-                        fontSize: 14,
-                        color: AppColors.textPrimary,
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
                       ),
                     ),
+                    dropdownColor: AppColors.surface,
+                    icon: const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: AppColors.primary,
+                    ),
+                    decoration: InputDecoration(
+                      fillColor: AppColors.surface,
+                      filled: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(
+                          color: AppColors.primary.withOpacity(0.05),
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(
+                          color: AppColors.primary,
+                          width: 1.5,
+                        ),
+                      ),
+                    ),
+                    items: orderProvider.specializations.map((specialization) {
+                      return DropdownMenuItem<int>(
+                        value: specialization.id,
+                        child: Text(
+                          specialization.name,
+                          style: const TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 14,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedSpecializationId = value;
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null) {
+                        return "الرجاء اختيار التخصص";
+                      }
+
+                      return null;
+                    },
                   );
-                }).toList(),
-                onChanged: (newValue) {
-                  setState(() {
-                    _selectedSpecialization = newValue;
-                  });
                 },
-                validator: (value) => value == null
-                    ? "الرجاء اختيار التخصص المكتوب في العقد"
-                    : null,
               ),
 
               const SizedBox(height: 24),
 
               // 2. عنوان حقل الـ Bio
               const Text(
-            "نبذة تعريفية(اختياري)",
+                "نبذة تعريفية(اختياري)",
                 style: TextStyle(
                   fontFamily: 'Cairo',
                   fontSize: 14,
@@ -150,7 +187,7 @@ class _ToBeProvider extends State<ToBeProvider> {
                   color: AppColors.textPrimary,
                 ),
               ),
-              
+
               const SizedBox(height: 8),
 
               // حقل النص الخاص بالـ Bio (nullable / اختياري)
@@ -212,21 +249,50 @@ class _ToBeProvider extends State<ToBeProvider> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        // طباعة المدخلات للتأكد من تخزينها تمهيداً لربط الـ API بالـ Backend لاحقاً
-                        print("التخصص المختار: $_selectedSpecialization");
-                        print(
-                          "النبذة التعريفية المكتوبة: ${_bioController.text}",
-                        );
+                    onPressed: () async {
+                      if (!_formKey.currentState!.validate()) {
+                        return;
+                      }
 
+                      final providerProfileProvider = context
+                          .read<ProviderProfileProvider>();
+
+                      final success = await providerProfileProvider
+                          .createProviderProfile(
+                            specializationId: _selectedSpecializationId!,
+                            bio: _bioController.text.trim().isEmpty
+                                ? null
+                                : _bioController.text.trim(),
+                          );
+
+                      if (!mounted) return;
+
+                      if (success) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text(
-                              "جاري إنشاء ملف مقدم الخدمة الخاص بك...",
+                              'تم إنشاء ملف مقدم الخدمة بنجاح',
                               style: TextStyle(fontFamily: 'Cairo'),
                             ),
-                            backgroundColor: AppColors.primary,
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ProviderMainPage(),
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              providerProfileProvider.createProfileError ??
+                                  'فشل إنشاء ملف مقدم الخدمة',
+                              style: const TextStyle(fontFamily: 'Cairo'),
+                            ),
+                            backgroundColor: Colors.red,
                           ),
                         );
                       }
@@ -238,14 +304,29 @@ class _ToBeProvider extends State<ToBeProvider> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    child: const Text(
-                      "إنشاء الحساب المهني الآن",
-                      style: TextStyle(
-                        fontFamily: 'Cairo',
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                    child: Consumer<ProviderProfileProvider>(
+                      builder: (context, providerProfileProvider, child) {
+                        if (providerProfileProvider.isCreatingProfile) {
+                          return const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          );
+                        }
+
+                        return const Text(
+                          'إنشاء الحساب المهني الآن',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),

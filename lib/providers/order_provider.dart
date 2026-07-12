@@ -192,4 +192,32 @@ class OrderProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  List<OrderModel> availableProviderOrders = [];
+
+  bool isLoadingAvailableProviderOrders = false;
+
+  String? availableProviderOrdersError;
+
+  Future<void> getAvailableProviderOrders() async {
+    try {
+      isLoadingAvailableProviderOrders = true;
+      availableProviderOrdersError = null;
+      notifyListeners();
+
+      availableProviderOrders = await apiService.getAvailableProviderOrders();
+
+      debugPrint(
+        'AVAILABLE PROVIDER ORDERS COUNT: '
+        '${availableProviderOrders.length}',
+      );
+    } catch (e) {
+      availableProviderOrdersError = 'فشل تحميل الطلبات المتاحة';
+
+      debugPrint('AVAILABLE PROVIDER ORDERS ERROR: $e');
+    } finally {
+      isLoadingAvailableProviderOrders = false;
+      notifyListeners();
+    }
+  }
 }
