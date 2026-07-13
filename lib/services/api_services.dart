@@ -6,6 +6,8 @@ import 'package:fix_it/models/order_model.dart';
 import 'package:fix_it/models/subscription_status_model.dart';
 import 'package:fix_it/models/subscription_plan_model.dart';
 import 'package:fix_it/models/subscription_payment_request_model.dart';
+import 'package:fix_it/models/provider_subscription_model.dart';
+import 'package:fix_it/models/offer_model.dart';
 
 class ApiService {
   final TokenStorage tokenStorage = TokenStorage(); //*this is instance of token
@@ -264,4 +266,104 @@ class ApiService {
         )
         .toList();
   }
+
+  Future<List<ProviderSubscriptionModel>> getMyProviderSubscriptions() async {
+    final response = await dio.get('provider-subscriptions/me');
+
+    final List<dynamic> data = response.data;
+
+    return data
+        .map(
+          (item) =>
+              ProviderSubscriptionModel.fromJson(item as Map<String, dynamic>),
+        )
+        .toList();
+  }
+
+  Future<OfferModel> createOffer({
+    required int orderId,
+    required double inspectionPrice,
+    String? note,
+    required double providerLatitude,
+    required double providerLongitude,
+  }) async {
+    final response = await dio.post(
+      'offers',
+      data: {
+        'orderId': orderId,
+        'inspectionPrice': inspectionPrice,
+        'note': note,
+        'providerLatitude': providerLatitude,
+        'providerLongitude': providerLongitude,
+      },
+    );
+
+    return OfferModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<List<OfferModel>> getMyOffers() async {
+    final response = await dio.get('offers/my');
+
+    final List<dynamic> data = response.data;
+
+    return data
+        .map((item) => OfferModel.fromJson(item as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<OfferModel>> getOrderOffers(int orderId) async {
+    final response = await dio.get('orders/$orderId/offers');
+
+    final List<dynamic> data = response.data;
+
+    return data
+        .map((item) => OfferModel.fromJson(item as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<OfferModel> acceptInspectionOffer(int offerId) async {
+    final response = await dio.patch('offers/$offerId/accept-inspection');
+
+    return OfferModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<OfferModel> continueWorkOffer(int offerId) async {
+    final response = await dio.patch('offers/$offerId/continue-work');
+
+    return OfferModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<OfferModel> rejectAfterInspectionOffer(int offerId) async {
+    final response = await dio.patch('offers/$offerId/reject-after-inspection');
+
+    return OfferModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<OfferModel> updateOffer({
+    required int offerId,
+    required double inspectionPrice,
+    String? note,
+    required double providerLatitude,
+    required double providerLongitude,
+  }) async {
+    final response = await dio.put(
+      'offers/$offerId',
+      data: {
+        'inspectionPrice': inspectionPrice,
+        'note': note,
+        'providerLatitude': providerLatitude,
+        'providerLongitude': providerLongitude,
+      },
+    );
+
+    return OfferModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<void> cancelOffer(int offerId) async {
+    await dio.patch('offers/$offerId/cancel');
+  }
+
+    Future<void> rejectOffer(int offerId) async {
+      await dio.patch('offers/$offerId/reject');
+    }
 }

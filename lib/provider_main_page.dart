@@ -3,6 +3,7 @@ import 'package:fix_it/app_colors.dart';
 import 'package:fix_it/provider_assigned_orders_page.dart';
 import 'package:fix_it/provider_available_orders_page.dart';
 import 'package:fix_it/provider_profile_page.dart';
+import 'package:fix_it/my_offers_page.dart';
 class ProviderMainPage extends StatefulWidget {
   const ProviderMainPage({super.key});
 
@@ -16,17 +17,8 @@ class _ProviderMainPageState extends State<ProviderMainPage> {
   final List<Widget> _pages = const [
      ProviderAvailableOrdersPage(),
      ProviderAssignedOrdersPage(),
-   
-    Center(
-      child: Text(
-        'عروضي',
-        style: TextStyle(
-          fontFamily: 'Cairo',
-          color: AppColors.textPrimary,
-        ),
-      ),
-    ),
-    const ProviderProfilePage(),
+     MyOffersPage(),
+     ProviderProfilePage(),
   ];
 
   @override

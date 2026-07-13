@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:fix_it/models/subscription_plan_model.dart';
 import 'package:fix_it/services/api_services.dart';
 import 'package:fix_it/models/subscription_payment_request_model.dart';
+import 'package:fix_it/models/provider_subscription_model.dart';
+
+
 class SubscriptionProvider extends ChangeNotifier {
   final ApiService apiService = ApiService();
 
@@ -127,6 +130,35 @@ Future<void> getMySubscriptionPaymentRequests() async {
     notifyListeners();
   }
 }
+List<ProviderSubscriptionModel> mySubscriptions = [];
 
+bool isLoadingMySubscriptions = false;
+
+String? mySubscriptionsError;
+
+Future<void> getMyProviderSubscriptions() async {
+  try {
+    isLoadingMySubscriptions = true;
+    mySubscriptionsError = null;
+    notifyListeners();
+
+    mySubscriptions =
+        await apiService.getMyProviderSubscriptions();
+
+    debugPrint(
+      'MY SUBSCRIPTIONS COUNT: ${mySubscriptions.length}',
+    );
+  } catch (e) {
+    mySubscriptionsError =
+        'فشل تحميل الاشتراكات';
+
+    debugPrint(
+      'MY SUBSCRIPTIONS ERROR: $e',
+    );
+  } finally {
+    isLoadingMySubscriptions = false;
+    notifyListeners();
+  }
+}
 
 }

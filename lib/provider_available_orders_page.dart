@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fix_it/app_colors.dart';
 import 'package:fix_it/providers/order_provider.dart';
+import 'package:fix_it/widgets/submit_offer_dialog.dart';
 
 class ProviderAvailableOrdersPage extends StatefulWidget {
   const ProviderAvailableOrdersPage({super.key});
@@ -27,9 +28,7 @@ class _ProviderAvailableOrdersPageState
     return Consumer<OrderProvider>(
       builder: (context, orderProvider, child) {
         if (orderProvider.isLoadingAvailableProviderOrders) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const Center(child: CircularProgressIndicator());
         }
 
         if (orderProvider.availableProviderOrdersError != null) {
@@ -47,9 +46,7 @@ class _ProviderAvailableOrdersPageState
                 const SizedBox(height: 8),
                 TextButton(
                   onPressed: () {
-                    context
-                        .read<OrderProvider>()
-                        .getAvailableProviderOrders();
+                    context.read<OrderProvider>().getAvailableProviderOrders();
                   },
                   child: const Text('إعادة المحاولة'),
                 ),
@@ -73,8 +70,7 @@ class _ProviderAvailableOrdersPageState
         }
 
         return RefreshIndicator(
-          onRefresh:
-              context.read<OrderProvider>().getAvailableProviderOrders,
+          onRefresh: context.read<OrderProvider>().getAvailableProviderOrders,
           child: ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: orders.length,
@@ -124,6 +120,40 @@ class _ProviderAvailableOrdersPageState
                       style: const TextStyle(
                         fontFamily: 'Cairo',
                         color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          final result = await showDialog<bool>(
+                            context: context,
+                            builder: (_) =>
+                                SubmitOfferDialog(orderId: order.id),
+                          );
+
+                          if (result == true && context.mounted) {
+                            await context
+                                .read<OrderProvider>()
+                                .getAvailableProviderOrders();
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'تقديم عرض',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
                   ],
