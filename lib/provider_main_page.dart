@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fix_it/app_colors.dart';
 import 'package:fix_it/provider_assigned_orders_page.dart';
 import 'package:fix_it/provider_available_orders_page.dart';
+import 'package:fix_it/provider_profile_page.dart';
 class ProviderMainPage extends StatefulWidget {
   const ProviderMainPage({super.key});
 
@@ -25,15 +26,7 @@ class _ProviderMainPageState extends State<ProviderMainPage> {
         ),
       ),
     ),
-    Center(
-      child: Text(
-        'ملفي كمقدم خدمة',
-        style: TextStyle(
-          fontFamily: 'Cairo',
-          color: AppColors.textPrimary,
-        ),
-      ),
-    ),
+    const ProviderProfilePage(),
   ];
 
   @override
