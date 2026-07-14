@@ -7,35 +7,39 @@ import 'package:dio/dio.dart';
 
 class OrderProvider extends ChangeNotifier {
   final ApiService apiService = ApiService();
-
+  //*_____________________________*//
+  //*this is for specialization*//
   List<SpecializationModel> specializations = [];
 
   bool isLoadingSpecializations = false;
 
   String? errorMessage;
-  bool isCreatingOrder = false;
-  String? createOrderError;
+ 
+ 
 
   Future<void> getSpecializations() async {
     try {
-      debugPrint('START GET SPECIALIZATIONS');
+      //debugPrint('START GET SPECIALIZATIONS');
 
       isLoadingSpecializations = true;
       errorMessage = null;
       notifyListeners();
 
-      specializations = await apiService.getSpecializations();
+      specializations = await apiService.getSpecializations(); //*get the api and saved it into list 
 
-      debugPrint('SPECIALIZATIONS COUNT: ${specializations.length}');
+     // debugPrint('SPECIALIZATIONS COUNT: ${specializations.length}');
     } catch (e) {
-      debugPrint('SPECIALIZATIONS ERROR: $e');
+      //debugPrint('SPECIALIZATIONS ERROR: $e');
       errorMessage = 'فشل الاتصال بالخادم';
     } finally {
-      isLoadingSpecializations = false;
-      notifyListeners();
+      isLoadingSpecializations = false; //*because the requst is end 
+      notifyListeners(); //*to tell the ui the update is end 
     }
   }
-
+        //*_____________________________*//
+        //*this is for ceate order*//
+         bool isCreatingOrder = false;
+          String? createOrderError;
   Future<bool> createOrder({
     required int specializationId,
     required String description,
@@ -73,7 +77,8 @@ class OrderProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-
+      //*_____________________________*//
+      //*this is for getmy orders*//
   List<OrderModel> myOrders = [];
 
   bool isLoadingMyOrders = false;
@@ -88,7 +93,7 @@ class OrderProvider extends ChangeNotifier {
 
       myOrders = await apiService.getMyOrders();
 
-      debugPrint('MY ORDERS COUNT: ${myOrders.length}');
+      //debugPrint('MY ORDERS COUNT: ${myOrders.length}');
     } catch (e) {
       if (e is DioException) {
         debugPrint('MY ORDERS STATUS: ${e.response?.statusCode}');
@@ -104,7 +109,8 @@ class OrderProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-
+       //*_____________________________*//
+       //*this is for get order by id*//
   OrderModel? selectedOrder;
 
   bool isLoadingOrderDetails = false;
@@ -128,7 +134,8 @@ class OrderProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-
+        //*_____________________________*//
+        //*this is for cancel order*//
   bool isCancellingOrder = false;
   String? cancelOrderError;
 
@@ -140,7 +147,8 @@ class OrderProvider extends ChangeNotifier {
 
       await apiService.cancelOrder(orderId);
 
-      await getMyOrders();
+      await getMyOrders();  //*this is like refresh because we canceled the order 
+      //*the orders must shown without this one 
 
       return true;
     } catch (e) {
@@ -153,7 +161,8 @@ class OrderProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-
+         //*_____________________________*//
+         //*this is for update order*//
   bool isUpdatingOrder = false;
   String? updateOrderError;
 
@@ -180,7 +189,7 @@ class OrderProvider extends ChangeNotifier {
       );
 
       await getMyOrders();
-      await getOrderById(orderId);
+      await getOrderById(orderId);  //*to update the current order *//
 
       return true;
     } catch (e) {
@@ -192,7 +201,8 @@ class OrderProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-
+         //*_____________________________*//
+         //*this is for available order for provider*//
   List<OrderModel> availableProviderOrders = [];
 
   bool isLoadingAvailableProviderOrders = false;
@@ -220,13 +230,17 @@ class OrderProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+           //*_____________________________*//
+           //*this is for order assigned to providers*//
 List<OrderModel> assignedProviderOrders = [];
 
 bool isLoadingAssignedProviderOrders = false;
 
 String? assignedProviderOrdersError;
 
-Future<void> getAssignedProviderOrders() async {
+Future<void> getAssignedProviderOrders() async { //*we make it void because we dont return it but 
+//*stored into list refresh the ui 
   try {
     isLoadingAssignedProviderOrders = true;
     assignedProviderOrdersError = null;

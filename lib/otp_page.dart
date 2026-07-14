@@ -35,7 +35,9 @@ class _OtpPageState extends State<OtpPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+
               const SizedBox(height: 80),
+              //!this is the icon of shild in otp___________________________
               const Icon(
                 Icons.shield_outlined,
                 size: 80,
@@ -43,6 +45,7 @@ class _OtpPageState extends State<OtpPage> {
               ),
               const SizedBox(height: 24),
               const Text(
+                //! this is the text under the iconshild___________________
                 "Verification Code",
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -54,7 +57,7 @@ class _OtpPageState extends State<OtpPage> {
               ),
               const SizedBox(height: 8),
               const Text(
-                "Enter the 6-digit code sent to your phone",
+                "Enter the 6-digit code sent to your email",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
@@ -168,7 +171,7 @@ class _OtpPageState extends State<OtpPage> {
           ),
         ),
         onChanged: (value) {
-          if (value.isNotEmpty && index < 3) {
+          if (value.isNotEmpty && index < 5) {
             FocusScope.of(
               context,
             ).nextFocus(); // الانتقال التلقائي للمربع التالي عند الكتابة

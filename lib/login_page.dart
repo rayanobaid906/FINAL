@@ -1,5 +1,4 @@
 // import 'dart:math';
-import 'package:fix_it/services/api_services.dart';
 import 'package:flutter/material.dart';
 import 'package:fix_it/app_colors.dart';
 import 'package:fix_it/custom_textfiled.dart';
@@ -19,7 +18,7 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController _passwordController = TextEditingController();
 
   bool _isPasswordHidden = true;
-  final ApiService apiService = ApiService();
+  
   @override
   void dispose() {
     _emailController.dispose();
@@ -38,13 +37,16 @@ class _LoginPageState extends State<LoginPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SizedBox(height: 100),
-              Icon(
+              //! this is for icon in the middle of page 
+              Icon(             
                 Icons.home_repair_service_rounded,
                 size: 100,
                 color: AppColors.primary,
               ),
               SizedBox(height: 24),
+              //!this is for text under the icon _____________________________________
               Text(
+
                 "Welcome Back",
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -54,7 +56,11 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               SizedBox(height: 8),
+                  //!this is a text to welcome to user _______________________________________
+
               Text(
+                 
+
                 "login to continue the app ",
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -64,6 +70,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               SizedBox(height: 40),
+              //!the container include the textfield __________________________________
               Container(
                 padding: EdgeInsets.all(24),
                 decoration: BoxDecoration(
@@ -87,14 +94,15 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
+                  children: [ 
+                    //!this is the text field of eamil___________________________________
                     CustomTextField(
                       controller: _emailController,
                       hintText: 'Email',
                       prefixIcon: Icons.email_outlined,
                     ),
                     SizedBox(height: 16),
-
+                        //! this is the text field of passowrd_______________________________
                     CustomTextField(
                       controller: _passwordController,
                       hintText: 'Password',
@@ -117,6 +125,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     SizedBox(height: 12),
                     Container(
+                      //! this is for forget passwrod_____________________________
                       padding: EdgeInsets.only(left: 150),
                       child: TextButton(
                         onPressed: () {},
@@ -136,7 +145,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               SizedBox(height: 24),
-
+                    //!this is the login button_________________________________________
               ElevatedButton(
                 onPressed: () async {
                   final authProvider = Provider.of<AuthProvider>(
@@ -145,8 +154,8 @@ class _LoginPageState extends State<LoginPage> {
                   );
 
                   bool success = await authProvider.login(
-                    _emailController.text,
-                    _passwordController.text,
+                    _emailController.text.trim(),
+                    _passwordController.text.trim(),
                   );
 
                   if (success) {
@@ -180,6 +189,8 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               SizedBox(height: 14),
+
+              //!this is if you dont have account _________________________________________
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

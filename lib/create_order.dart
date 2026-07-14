@@ -17,7 +17,7 @@ class CreateOrder extends StatefulWidget {
 
 class _CreateOrderScreenState extends State<CreateOrder> {
   final _formKey = GlobalKey<FormState>();
-  bool get isEditMode => widget.order != null;
+  bool get isEditMode => widget.order != null; //*if order null =>new order else updae torder 
   LatLng? _selectedLocation;
 
   // String? _selectedSpecialization;

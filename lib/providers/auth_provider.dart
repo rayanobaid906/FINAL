@@ -2,113 +2,107 @@ import 'package:flutter/material.dart';
 // import 'hoe/services/api_service.dart';
 import 'package:fix_it/services/api_services.dart';
 import 'package:dio/dio.dart';
+
 class AuthProvider extends ChangeNotifier {
+  final ApiService apiService =
+      ApiService(); //*this is instance of api services
+  //*_____________________________*//
+  //*this is for login*//
+  bool isLoading = false; //*this is for if have a operation
+  Future<bool> login(String email, String password) async {
+    try {
+      isLoading = true;
+      notifyListeners(); //*to tell to the ui to change the state to true
 
-  final ApiService apiService = ApiService();
+      final response = await apiService.login(email, password);
 
-  bool isLoading = false;
-Future<bool> login(String email, String password) async {
+      // print(response.data);
 
-  try {
+      return true; //*that mean this okay and no exception
+    } catch (e) {
+      if (e is DioException) {
+        debugPrint(
+          'LOGIN STATUS: ${e.response?.statusCode}',
+        ); //*the ? maybe null
+        debugPrint('LOGIN DATA: ${e.response?.data}');
+        debugPrint('LOGIN MESSAGE: ${e.message}');
+      } else {
+        debugPrint('LOGIN ERROR: $e');
+      }
 
-    isLoading = true;
-    notifyListeners();
-
-    final response = await apiService.login(email, password);
-
-    print(response.data);
-
-    return true;
-
-  } catch (e) {
-  if (e is DioException) {
-    debugPrint('LOGIN STATUS: ${e.response?.statusCode}');
-    debugPrint('LOGIN DATA: ${e.response?.data}');
-    debugPrint('LOGIN MESSAGE: ${e.message}');
-  } else {
-    debugPrint('LOGIN ERROR: $e');
+      return false;
+    } finally {
+      isLoading = false; //*this is for stop the loding
+      notifyListeners();
+    }
   }
 
-  return false;
-} finally {
+  //*_____________________________*//
+  //*this is for register *//
 
-    isLoading = false;
-    notifyListeners();
+  Future<bool> register(
+    String fullName,
+    String email,
+    String phoneNumber,
+    String password,
+  ) async {
+    try {
+      isLoading = true;
+      notifyListeners();
+
+      final response = await apiService.register(
+        fullName,
+        email,
+        phoneNumber,
+        password,
+      );
+
+      print(response.data);
+      print("REGISTER SUCCESS");
+
+      return true;
+    } catch (e) {
+      if (e is DioException) {
+        debugPrint('REGISTER STATUS: ${e.response?.statusCode}');
+        debugPrint('REGISTER DATA: ${e.response?.data}');
+        debugPrint('REGISTER MESSAGE: ${e.message}');
+      } else {
+        debugPrint('REGISTER ERROR: $e');
+      }
+
+      return false;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
   }
-}
 
+  //*_____________________________*//
+  //*this is for verify email*//
+  Future<bool> verifyEmail(String email, String code) async {
+    try {
+      isLoading = true;
+      notifyListeners();
 
-//___________________________________________
+      final response = await apiService.verifyEmail(email, code);
 
+      print('VERFIY RESPONSE: ${response.data}');
+      print('STATUS CODE: ${response.statusCode}');
 
-Future<bool> register(
-  String fullName,
-  String email,
-  String phoneNumber,
-  String password,
-) async {
+      return true;
+    } catch (e) {
+      if (e is DioException) {
+        debugPrint('VERIFY STATUS: ${e.response?.statusCode}');
+        debugPrint('VERIFY DATA: ${e.response?.data}');
+        debugPrint('VERIFY MESSAGE: ${e.message}');
+      } else {
+        debugPrint('VERIFY ERROR: $e');
+      }
 
-  try {
-
-    isLoading = true;
-    notifyListeners();
-
-    final response = await apiService.register(
-      fullName,
-      email,
-      phoneNumber,
-      password,
-    );
-
-    print(response.data);
-    print("REGISTER SUCCESS");
-
-    return true;
-
-  } catch (e) {
-
-    print("REGISTER ERROR:");
-print(e.toString());
-
-    return false;
-
-  } finally {
-
-    isLoading = false;
-    notifyListeners();
+      return false;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
   }
-}
- Future<bool> verifyEmail(
-  String email,
-  String code,
-) async {
-
-  try {
-
-    isLoading = true;
-    notifyListeners();
-
-    final response = await apiService.verifyEmail(
-      email,
-      code,
-    );
-
-   print('LOGIN RESPONSE: ${response.data}');
-print('STATUS CODE: ${response.statusCode}');
-    
-
-    return true;
-
-  } catch (e) {
-
-    print("VERIFY ERROR: $e");
-
-    return false;
-
-  } finally {
-
-    isLoading = false;
-    notifyListeners();
-  }
-}
 }

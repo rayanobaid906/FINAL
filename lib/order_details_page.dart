@@ -4,7 +4,7 @@ import 'package:fix_it/app_colors.dart';
 import 'package:fix_it/providers/order_provider.dart';
 import 'package:fix_it/create_order.dart';
 import 'package:fix_it/order_offers_page.dart';
-
+import 'package:fix_it/rateing.dart';
 class OrderDetailsPage extends StatefulWidget {
   final int orderId;
 
@@ -295,6 +295,53 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                       ),
                     ),
                   ),
+                  if (order.status == 4) ...[
+  const SizedBox(height: 12),
+
+  SizedBox(
+    width: double.infinity,
+    height: 50,
+    child: ElevatedButton.icon(
+      onPressed: () async {
+        final result = await Navigator.push<bool>(
+          context,
+          MaterialPageRoute(
+            builder: (_) => RatingPage(
+              orderId: order.id,
+            ),
+          ),
+        );
+
+        if (result == true && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'تم حفظ تقييمك',
+                style: TextStyle(fontFamily: 'Cairo'),
+              ),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      },
+      icon: const Icon(Icons.star_rounded),
+      label: const Text(
+        'تقييم مقدم الخدمة',
+        style: TextStyle(
+          fontFamily: 'Cairo',
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+      ),
+    ),
+  ),
+],
                 ],
               ),
             ),

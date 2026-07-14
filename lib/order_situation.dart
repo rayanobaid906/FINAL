@@ -15,8 +15,8 @@ class _OrderSituationsState extends State<OrderSituations> {
   void initState() {
     super.initState();
 
-    Future.microtask(() {
-      context.read<OrderProvider>().getMyOrders();
+    Future.microtask(() { //*to wait millisecond to draw the page *//
+      context.read<OrderProvider>().getMyOrders(); //*to get the order when the user open the page *//
     });
   }
 
@@ -34,7 +34,7 @@ class _OrderSituationsState extends State<OrderSituations> {
       );
     }
 
-    return RefreshIndicator(
+    return RefreshIndicator( //*to refresh the page and get the orders 
       onRefresh: context.read<OrderProvider>().getMyOrders,
       child: ListView.separated(
         padding: const EdgeInsets.all(16),
@@ -83,7 +83,7 @@ class _OrderSituationsState extends State<OrderSituations> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  order.addressText ?? 'لا يوجد عنوان',
+                  order.addressText ?? 'لا يوجد عنوان', //*if the address empty he show that 
                   style: const TextStyle(
                     fontFamily: 'Cairo',
                     fontSize: 12,
@@ -187,7 +187,7 @@ class _OrderSituationsState extends State<OrderSituations> {
 
             return TabBarView(
               children: [
-                _ordersList(activeOrders, 'لا توجد طلبات جارية حالياً 🛠️'),
+                _ordersList(activeOrders, 'لا توجد طلبات جارية حالياً 🛠️'),//*this massege if the orders empty 
                 _ordersList(completedOrders, 'سجل الطلبات المكتملة فارغ 📁'),
               ],
             );

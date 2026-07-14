@@ -22,9 +22,11 @@ class _SignupPageState extends State<SignupPage> {
   bool _isPasswordHidden = true;
   @override
   void dispose() {
+    _fullnameContoller.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _phoneController.dispose();
+
     super.dispose();
   }
 
@@ -40,6 +42,7 @@ class _SignupPageState extends State<SignupPage> {
             children: [
               SizedBox(height: 100),
               Icon(
+                //!this is the icon of page__________________________
                 Icons.home_repair_service_rounded,
                 size: 100,
                 color: AppColors.primary,
@@ -65,6 +68,7 @@ class _SignupPageState extends State<SignupPage> {
               //   ),
               // ),
               SizedBox(height: 40),
+              //!this is the container have the textfield
               Container(
                 padding: EdgeInsets.all(24),
                 decoration: BoxDecoration(
@@ -89,12 +93,14 @@ class _SignupPageState extends State<SignupPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    //!this is the text field of fullname________________________
                     CustomTextField(
                       controller: _fullnameContoller,
                       hintText: 'Full Name',
                       prefixIcon: Icons.person_2_outlined,
                     ),
                     SizedBox(height: 16),
+                    //!this the text filed of phonenumber_____________________________
                     CustomTextField(
                       controller: _phoneController,
                       hintText: 'Phone Number',
@@ -102,10 +108,12 @@ class _SignupPageState extends State<SignupPage> {
                       keyboardType: TextInputType.phone,
                     ),
                     SizedBox(height: 16),
+                    //!this is the text filed of email 
                     CustomTextField(
                       controller: _emailController,
                       hintText: 'Email',
                       prefixIcon: Icons.email_outlined,
+                      keyboardType: TextInputType.emailAddress,
                     ),
                     SizedBox(height: 16),
 
@@ -150,11 +158,11 @@ class _SignupPageState extends State<SignupPage> {
                 ),
               ),
               SizedBox(height: 24),
-
+                 //!this is the button of register 
               ElevatedButton( 
               
                 onPressed: () async {
-                  print("BUTTON WORKING");
+                
                   final authProvider = Provider.of<AuthProvider>(
                     context,
                     listen: false,
@@ -171,11 +179,12 @@ class _SignupPageState extends State<SignupPage> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("Register Success 🔥")),
                     );
+                    //! if he success he will move you to otp page 
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
-                            OtpPage(email: _emailController.text),
+                            OtpPage(email: _emailController.text), //!and there we pass the email to otp page 
                       ),
                     );
                   } else {

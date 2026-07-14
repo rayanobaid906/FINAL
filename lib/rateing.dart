@@ -1,26 +1,83 @@
 import 'package:flutter/material.dart';
-import 'package:fix_it/app_colors.dart';
-class Rateing extends StatefulWidget {
-  final String orderId; // معرف الطلب المطلوب تقييمه حسب الـ MVP (صفحة 7)
+import 'package:provider/provider.dart';
 
-  const Rateing({super.key, required this.orderId});
+import 'package:fix_it/app_colors.dart';
+import 'package:fix_it/providers/rating_provider.dart';
+
+class RatingPage extends StatefulWidget {
+  final int orderId;
+
+  const RatingPage({super.key, required this.orderId});
 
   @override
-  State<Rateing> createState() => _RateingState();
+  State<RatingPage> createState() => _RatingPageState();
 }
 
-class _RateingState extends State<Rateing> {
+class _RatingPageState extends State<RatingPage> {
   final _formKey = GlobalKey<FormState>();
 
-  
-  int _ratingValue = 0; // القيمة الإجبارية من 1 إلى 5
-  final TextEditingController _commentController =
-      TextEditingController(); // حقل التعليق الاختياري (nullable)
+  int _ratingValue = 0;
+
+  final TextEditingController _commentController = TextEditingController();
 
   @override
   void dispose() {
     _commentController.dispose();
     super.dispose();
+  }
+
+  Future<void> _submitRating() async {
+    // يجب اختيار تقييم من 1 إلى 5.
+    if (_ratingValue < 1 || _ratingValue > 5) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'الرجاء اختيار تقييم من نجمة واحدة إلى خمس نجوم',
+            style: TextStyle(fontFamily: 'Cairo'),
+          ),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    // read يستدعي الدالة مرة واحدة، ولا يعيد بناء الصفحة.
+    final ratingProvider = context.read<RatingProvider>();
+
+    final success = await ratingProvider.createRating(
+      orderId: widget.orderId,
+      value: _ratingValue,
+    );
+
+    if (!mounted) return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'تم إرسال تقييمك بنجاح، شكرًا لك',
+            style: TextStyle(fontFamily: 'Cairo'),
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      Navigator.pop(context, true);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            ratingProvider.ratingError ?? 'فشل إرسال التقييم',
+            style: const TextStyle(fontFamily: 'Cairo'),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -32,12 +89,12 @@ class _RateingState extends State<Rateing> {
         elevation: 0,
         centerTitle: true,
         title: const Text(
-          "تقييم مقدم الخدمة",
+          'تقييم مقدم الخدمة',
           style: TextStyle(
             fontFamily: 'Cairo',
             fontWeight: FontWeight.bold,
             fontSize: 18,
-            color: AppColors.textPrimary, // نص واضح ومرئي تماماً
+            color: AppColors.textPrimary,
           ),
         ),
         leading: IconButton(
@@ -46,20 +103,22 @@ class _RateingState extends State<Rateing> {
             color: AppColors.textPrimary,
             size: 22,
           ),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
       ),
-      body: 
-      SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 10),
+
               const Text(
-                "كيف كانت تجربتك مع مقدم الخدمة؟",
+                'كيف كانت تجربتك مع مقدم الخدمة؟',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily: 'Cairo',
@@ -68,9 +127,11 @@ class _RateingState extends State<Rateing> {
                   color: AppColors.textPrimary,
                 ),
               ),
+
               const SizedBox(height: 6),
+
               const Text(
-                "تقييمك يساعدنا في الحفاظ على جودة ومصداقية الفنيين في التطبيق.",
+                'تقييمك يساعدنا في الحفاظ على جودة ومصداقية الفنيين في التطبيق.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily: 'Cairo',
@@ -78,37 +139,38 @@ class _RateingState extends State<Rateing> {
                   color: AppColors.textSecondary,
                 ),
               ),
+
               const SizedBox(height: 30),
 
-              // 1. صف النجوم التفاعلية الأصيل (بدون حزم خارجية)
+              // النجوم من 1 إلى 5.
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(5, (index) {
-                  int starValue = index + 1;
+                  final starValue = index + 1;
+
                   return IconButton(
                     icon: Icon(
                       starValue <= _ratingValue
                           ? Icons.star_rounded
                           : Icons.star_border_rounded,
                     ),
-                    iconSize: 44, // حجم مريح جداً للمس والضغط باليد
+                    iconSize: 44,
                     color: starValue <= _ratingValue
-                        ? const Color(0xFFFFB03A) // لون ذهبي فخم ومريح للعين
+                        ? const Color(0xFFFFB03A)
                         : AppColors.textSecondary.withOpacity(0.4),
                     onPressed: () {
                       setState(() {
-                        _ratingValue = starValue; // تخزين قيمة النجمة المختارة
+                        _ratingValue = starValue;
                       });
                     },
                   );
                 }),
               ),
 
-              // مؤشر رقمي ناعم يظهر فقط عند الاختيار
               if (_ratingValue > 0) ...[
                 const SizedBox(height: 8),
                 Text(
-                  "$_ratingValue / 5",
+                  '$_ratingValue / 5',
                   style: const TextStyle(
                     fontFamily: 'Cairo',
                     fontSize: 14,
@@ -120,11 +182,10 @@ class _RateingState extends State<Rateing> {
 
               const SizedBox(height: 35),
 
-              // 2. عنوان حقل التعليق النصي
               const Align(
                 alignment: Alignment.topRight,
                 child: Text(
-                  "اكتب تعليقاً عن الخدمة (اختياري)",
+                  'اكتب تعليقًا عن الخدمة (اختياري)',
                   style: TextStyle(
                     fontFamily: 'Cairo',
                     fontSize: 14,
@@ -133,9 +194,9 @@ class _RateingState extends State<Rateing> {
                   ),
                 ),
               ),
+
               const SizedBox(height: 8),
 
-             
               TextFormField(
                 controller: _commentController,
                 maxLines: 4,
@@ -145,8 +206,7 @@ class _RateingState extends State<Rateing> {
                   color: AppColors.textPrimary,
                 ),
                 decoration: InputDecoration(
-                  hintText:
-                      "أضف ملاحظاتك عن جودة العمل وسلوك الفني لمساعدة المستخدمين الآخرين...",
+                  hintText: 'أضف ملاحظاتك عن جودة العمل وسلوك الفني...',
                   hintStyle: const TextStyle(
                     fontFamily: 'Cairo',
                     fontSize: 13,
@@ -176,75 +236,56 @@ class _RateingState extends State<Rateing> {
 
               const SizedBox(height: 40),
 
-              // 3. زر إرسال التقييم مع الـ Validator الخاص بالنجوم
-              SizedBox(
-                width: double.infinity,
-                height: 54,
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [
-                        AppColors.primary,
-                        Color(0xFFC69214),
-                      ], // تدرج ذهبي فخم
-                      begin: Alignment.topRight,
-                      end: Alignment.bottomLeft,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // شرط التحقق الصارم: يجب اختيار نجمة واحدة على الأقل قبل الإرسال
-                      if (_ratingValue == 0) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              "الرجاء تحديد التقييم بالنجوم أولاً قبل الإرسال.",
-                              style: TextStyle(fontFamily: 'Cairo'),
-                            ),
-                            backgroundColor: Colors.orange,
-                          ),
-                        );
-                        return;
-                      }
-
-                      if (_formKey.currentState!.validate()) {
-                        // طباعة الحقول الرسمية للتأكد من مطابقتها لجدول البيانات
-                        print("OrderId: ${widget.orderId}");
-                        print("Rating Value: $_ratingValue");
-                        print("Comment: ${_commentController.text}");
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              "تم إرسال تقييمك بنجاح، شكراً لك!",
-                              style: TextStyle(fontFamily: 'Cairo'),
-                            ),
-                            backgroundColor: AppColors.primary,
-                          ),
-                        );
-
-                        Navigator.pop(context); // إغلاق الشاشة والعودة تلقائياً
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      shape: RoundedRectangleBorder(
+              // Consumer يعيد بناء الزر فقط عندما تتغير حالة Provider.
+              Consumer<RatingProvider>(
+                builder: (context, ratingProvider, child) {
+                  return SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [AppColors.primary, Color(0xFFC69214)],
+                          begin: Alignment.topRight,
+                          end: Alignment.bottomLeft,
+                        ),
                         borderRadius: BorderRadius.circular(16),
                       ),
-                    ),
-                    child: const Text(
-                      "إرسال التقييم النهائي",
-                      style: TextStyle(
-                        fontFamily: 'Cairo',
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                      child: ElevatedButton(
+                        // نعطل الزر أثناء إرسال التقييم.
+                        onPressed: ratingProvider.isSubmittingRating
+                            ? null
+                            : _submitRating,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          disabledBackgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: ratingProvider.isSubmittingRating
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                'إرسال التقييم النهائي',
+                                style: TextStyle(
+                                  fontFamily: 'Cairo',
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
                       ),
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
             ],
           ),
