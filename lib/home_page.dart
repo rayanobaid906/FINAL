@@ -147,7 +147,7 @@ class _HomePageState extends State<HomePage> {
                     color: item['bg'],
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: AppColors.primary.withOpacity(0.12),
+                      color: AppColors.primary.withValues(alpha: 0.12),
                       width: 1,
                     ),
                   ),
@@ -186,7 +186,7 @@ class _HomePageState extends State<HomePage> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.08),
+                          color: AppColors.primary.withValues(alpha: 0.08),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -215,7 +215,7 @@ class _HomePageState extends State<HomePage> {
                 decoration: BoxDecoration(
                   color: _currentPage == index
                       ? AppColors.primary
-                      : AppColors.textSecondary.withOpacity(0.3),
+                      : AppColors.textSecondary.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(2.5),
                 ),
               ),
@@ -231,7 +231,7 @@ class _HomePageState extends State<HomePage> {
               bottom: 8.0,
             ),
             child: Text(
-              "التخصصات المتاحة",
+              "بعض التخصصات المتاحة",
               style: TextStyle(
                 fontFamily: 'Cairo',
                 fontSize: 16,
@@ -273,7 +273,7 @@ class _HomePageState extends State<HomePage> {
                       color: AppColors.surface,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: AppColors.primary.withOpacity(0.06),
+                        color: AppColors.primary.withValues(alpha: 0.06),
                         width: 1,
                       ),
                     ),
@@ -338,7 +338,7 @@ class _HomePageState extends State<HomePage> {
                 gradient: LinearGradient(
                   colors: [
                     AppColors.primary,
-                    AppColors.primary.withOpacity(0.75),// تدرج لوني بسيط لإضافة عمق وجاذبية
+                    AppColors.primary.withValues(alpha: 0.75),// تدرج لوني بسيط لإضافة عمق وجاذبية
                   ],
                   begin: Alignment.topRight,
                   end: Alignment.bottomLeft,
@@ -346,7 +346,7 @@ class _HomePageState extends State<HomePage> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withOpacity(0.2),
+                    color: AppColors.primary.withValues(alpha: 0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),

@@ -92,7 +92,7 @@ class _MySubscriptionRequestsPageState
             child: ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: provider.myPaymentRequests.length,
-              separatorBuilder: (_, __) =>
+              separatorBuilder: (_, _) =>
                   const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final request =

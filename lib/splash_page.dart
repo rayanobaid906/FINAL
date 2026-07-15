@@ -16,7 +16,9 @@ class _SplashPageState extends State<SplashPage> {
     // منطق المؤقت (Timer): ينتظر 3 ثوانٍ ثم ينتقل للشاشة التالية
     Timer(const Duration(seconds: 3), () {
       // هنا سنضع اسم شاشة الـ Login لاحقاً عندما نقوم بإنشائها
+     
       // حالياً لن ننتقل لأي مكان حتى ننتهي تماماً من هذه الشاشة
+      Navigator().push(context)
       print("انتهت الـ 3 ثوانٍ! جاهز للانتقال للـ Login Page");
     });
   }

@@ -1,3 +1,4 @@
+import 'package:fix_it/token_storage.dart';
 import 'package:flutter/material.dart';
 // import 'hoe/services/api_service.dart';
 import 'package:fix_it/services/api_services.dart';
@@ -6,6 +7,8 @@ import 'package:dio/dio.dart';
 class AuthProvider extends ChangeNotifier {
   final ApiService apiService =
       ApiService(); //*this is instance of api services
+  final TokenStorage tokenStorage = TokenStorage();
+
   //*_____________________________*//
   //*this is for login*//
   bool isLoading = false; //*this is for if have a operation
@@ -16,6 +19,7 @@ class AuthProvider extends ChangeNotifier {
 
       final response = await apiService.login(email, password);
 
+      
       // print(response.data);
 
       return true; //*that mean this okay and no exception
@@ -37,6 +41,27 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> refreshToken() async {
+    try {
+      final oldRefreshToken = await tokenStorage.getRefreshToken();
+
+      if (oldRefreshToken == null) {
+        return false;
+      }
+
+      final result = await apiService.refreshToken(oldRefreshToken);
+
+      await tokenStorage.saveTokens(result.accessToken, result.refreshToken);
+
+      return true;
+    } catch (e) {
+      debugPrint('REFRESH TOKEN ERROR: $e');
+
+      await tokenStorage.clearTokens();
+
+      return false;
+    }
+  }
   //*_____________________________*//
   //*this is for register *//
 
@@ -102,6 +127,30 @@ class AuthProvider extends ChangeNotifier {
       return false;
     } finally {
       isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  bool isLoggingOut = false;
+  String? logoutError;
+
+  Future<bool> logout() async {
+    try {
+      isLoggingOut = true;
+      logoutError = null;
+      notifyListeners();
+
+      await apiService.logout();
+
+      return true;
+    } catch (e) {
+      debugPrint('LOGOUT ERROR: $e');
+
+      logoutError = 'حدث خطأ أثناء تسجيل الخروج';
+
+      return false;
+    } finally {
+      isLoggingOut = false;
       notifyListeners();
     }
   }

@@ -110,10 +110,10 @@ void initState() {
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppColors.primary.withOpacity(0.2),
+                    color: AppColors.primary.withValues(alpha: 0.2),
                     width: 1,
                   ),
                 ),
@@ -191,7 +191,7 @@ void initState() {
                   }
 
                   return DropdownButtonFormField<int>(
-                    value: _selectedSpecializationId,
+                    initialValue: _selectedSpecializationId,
                     hint: const Text(
                       "اختر التخصص من القائمة",
                       style: TextStyle(
@@ -224,7 +224,7 @@ void initState() {
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
                         borderSide: BorderSide(
-                          color: AppColors.primary.withOpacity(0.05),
+                          color: AppColors.primary.withValues(alpha: 0.05),
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(
@@ -304,7 +304,7 @@ void initState() {
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: BorderSide(
-                      color: AppColors.primary.withOpacity(0.05),
+                      color: AppColors.primary.withValues(alpha: 0.05),
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
@@ -368,7 +368,7 @@ void initState() {
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: BorderSide(
-                      color: AppColors.primary.withOpacity(0.05),
+                      color: AppColors.primary.withValues(alpha: 0.05),
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
@@ -419,7 +419,7 @@ void initState() {
                     color: AppColors.surface,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                      color: AppColors.primary.withOpacity(0.08),
+                      color: AppColors.primary.withValues(alpha: 0.08),
                     ),
                   ),
                   child: Row(

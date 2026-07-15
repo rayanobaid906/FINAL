@@ -1,9 +1,9 @@
+import 'package:fix_it/models/completion_qr_model.dart';
 import 'package:flutter/material.dart';
 import 'package:fix_it/models/specialization_model.dart';
 import 'package:fix_it/services/api_services.dart';
 import 'package:dio/dio.dart';
 import 'package:fix_it/models/order_model.dart';
-import 'package:dio/dio.dart';
 
 class OrderProvider extends ChangeNotifier {
   final ApiService apiService = ApiService();
@@ -265,5 +265,106 @@ Future<void> getAssignedProviderOrders() async { //*we make it void because we d
     notifyListeners();
   }
 }
+
+CompletionQrModel? completionQr;
+
+bool isGeneratingCompletionQr = false;
+
+String? completionQrError;
+
+Future<bool> generateCompletionQr(int orderId) async {
+  try {
+    isGeneratingCompletionQr = true;
+    completionQrError = null;
+    notifyListeners();
+
+    completionQr = await apiService.generateCompletionQr(
+      orderId,
+    );
+
+    return true;
+  } on DioException catch (e) {
+    debugPrint(
+      'GENERATE QR STATUS: ${e.response?.statusCode}',
+    );
+    debugPrint(
+      'GENERATE QR DATA: ${e.response?.data}',
+    );
+    debugPrint(
+      'GENERATE QR MESSAGE: ${e.message}',
+    );
+
+    final message = e.response?.data?.toString() ?? '';
+
+    completionQrError = message.isNotEmpty
+        ? message
+        : 'فشل إنشاء رمز إنهاء الطلب';
+
+    return false;
+  } catch (e) {
+    debugPrint(
+      'GENERATE QR UNKNOWN ERROR: $e',
+    );
+
+    completionQrError =
+        'حدث خطأ غير متوقع';
+
+    return false;
+  } finally {
+    isGeneratingCompletionQr = false;
+    notifyListeners();
+  }
+}
+bool isCompletingOrderByQr = false;
+String? completeOrderByQrError;
+
+Future<bool> completeOrderByQr({
+  required int orderId,
+  required String token,
+}) async {
+  try {
+    isCompletingOrderByQr = true;
+    completeOrderByQrError = null;
+    notifyListeners();
+
+    await apiService.completeOrderByQr(
+      orderId: orderId,
+      token: token,
+    );
+
+    return true;
+  } on DioException catch (e) {
+    debugPrint(
+      'COMPLETE ORDER BY QR STATUS: ${e.response?.statusCode}',
+    );
+    debugPrint(
+      'COMPLETE ORDER BY QR DATA: ${e.response?.data}',
+    );
+    debugPrint(
+      'COMPLETE ORDER BY QR MESSAGE: ${e.message}',
+    );
+
+    final message = e.response?.data?.toString() ?? '';
+
+    completeOrderByQrError = message.isNotEmpty
+        ? message
+        : 'فشل إنهاء الطلب';
+
+    return false;
+  } catch (e) {
+    debugPrint(
+      'COMPLETE ORDER BY QR UNKNOWN ERROR: $e',
+    );
+
+    completeOrderByQrError =
+        'حدث خطأ غير متوقع';
+
+    return false;
+  } finally {
+    isCompletingOrderByQr = false;
+    notifyListeners();
+  }
+}
+
 
 }

@@ -1,20 +1,17 @@
-import 'package:fix_it/create_order.dart';
 import 'package:fix_it/main_page.dart';
 import 'package:fix_it/providers/order_provider.dart';
-import 'package:fix_it/widgets/submit_offer_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fix_it/login_page.dart';
 import 'package:fix_it/providers/subscription_provider.dart';
 import 'package:fix_it/providers/provider_profile_provider.dart';
 import 'providers/auth_provider.dart';
-import 'package:fix_it/splash_page.dart';
-import 'package:fix_it/otp_page.dart';
 import 'package:fix_it/sign_up.dart';
 import 'package:fix_it/home_page.dart';
-import 'package:fix_it/subscription_plans_page.dart';
 import 'package:fix_it/providers/offer_provider.dart';
 import 'package:fix_it/providers/rating_provider.dart';
+import 'package:fix_it/providers/notification_provider.dart';
+
 void main() {
   runApp(
     MultiProvider(
@@ -25,6 +22,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => SubscriptionProvider()),
         ChangeNotifierProvider(create: (_) => OfferProvider()),
         ChangeNotifierProvider(create: (_) => RatingProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
       child: MyApp(),
     ),

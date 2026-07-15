@@ -5,6 +5,8 @@ import 'package:fix_it/providers/order_provider.dart';
 import 'package:fix_it/create_order.dart';
 import 'package:fix_it/order_offers_page.dart';
 import 'package:fix_it/rateing.dart';
+import 'package:fix_it/completion_qr_page.dart';
+
 class OrderDetailsPage extends StatefulWidget {
   final int orderId;
 
@@ -227,19 +229,27 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                       },
                     ),
                   ),
-                    SizedBox(height: 12),
+                  SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => OrderOffersPage(orderId: order.id),
-                          ),
-                        );
-                      },
+                    onPressed: () async {
+  await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => OrderOffersPage(
+        orderId: order.id,
+      ),
+    ),
+  );
+
+  if (!context.mounted) return;
+
+  await context
+      .read<OrderProvider>()
+      .getOrderById(order.id);
+},
                       icon: const Icon(Icons.local_offer_rounded),
                       label: const Text(
                         'مشاهدة العروض',
@@ -257,8 +267,6 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                       ),
                     ),
                   ),
-
-                  
 
                   SizedBox(height: 12),
                   SizedBox(
@@ -295,7 +303,10 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                       ),
                     ),
                   ),
-                  if (order.status == 4) ...[
+
+
+
+                   if (order.status == 2) ...[
   const SizedBox(height: 12),
 
   SizedBox(
@@ -306,27 +317,23 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
         final result = await Navigator.push<bool>(
           context,
           MaterialPageRoute(
-            builder: (_) => RatingPage(
+            builder: (_) => CompletionQrPage(
               orderId: order.id,
             ),
           ),
         );
 
         if (result == true && context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'تم حفظ تقييمك',
-                style: TextStyle(fontFamily: 'Cairo'),
-              ),
-              backgroundColor: Colors.green,
-            ),
-          );
+          await context
+              .read<OrderProvider>()
+              .getOrderById(order.id);
         }
       },
-      icon: const Icon(Icons.star_rounded),
+      icon: const Icon(
+        Icons.qr_code_2_rounded,
+      ),
       label: const Text(
-        'تقييم مقدم الخدمة',
+        'إنهاء الطلب وإنشاء QR',
         style: TextStyle(
           fontFamily: 'Cairo',
           fontWeight: FontWeight.bold,
@@ -342,6 +349,60 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
     ),
   ),
 ],
+
+
+
+
+
+
+
+
+
+                  if (order.status == 4) ...[
+                    const SizedBox(height: 12),
+
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          final result = await Navigator.push<bool>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => RatingPage(orderId: order.id),
+                            ),
+                          );
+
+                          if (result == true && context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'تم حفظ تقييمك',
+                                  style: TextStyle(fontFamily: 'Cairo'),
+                                ),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          }
+                        },
+                        icon: const Icon(Icons.star_rounded),
+                        label: const Text(
+                          'تقييم مقدم الخدمة',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

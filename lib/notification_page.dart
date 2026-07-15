@@ -1,89 +1,52 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import 'package:fix_it/app_colors.dart';
-class NotificationPage extends StatefulWidget {
-  const NotificationPage({super.key});
+import 'package:fix_it/providers/notification_provider.dart';
+
+class NotificationsPage extends StatefulWidget {
+  const NotificationsPage({super.key});
 
   @override
-  State<NotificationPage> createState() => _NotificationPage();
+  State<NotificationsPage> createState() => _NotificationsPageState();
 }
 
-class _NotificationPage extends State<NotificationPage> {
-  // حالة التحميل (Loading State) لمحاكاة جلب البيانات من السيرفر
-  bool _isLoading = true;
-
-  // قائمة الإشعارات التجريبية (Mock Data) الخاصة بسياق العميل حسب الـ MVP (صفحة 16)
-  // إذا كانت القائمة فارغة [] ستعرض الشاشة تلقائياً حالة "لا توجد إشعارات"
-  List<Map<String, dynamic>> _notifications = [];
-
+class _NotificationsPageState extends State<NotificationsPage> {
   @override
   void initState() {
     super.initState();
-    _fetchNotificationsMock();
+
+    Future.microtask(() async {
+      final notificationProvider = context.read<NotificationProvider>();
+
+      await notificationProvider.getNotifications();
+
+    
+
+      await notificationProvider.markAllNotificationsAsRead();
+    });
   }
 
-  // دالة لمحاكاة جلب البيانات اللحظية من السيرفر بتأخير ثانيتين
-  Future<void> _fetchNotificationsMock() async {
-    await Future.delayed(const Duration(seconds: 2));
-    if (mounted) {
-      setState(() {
-        _notifications = [
-          {
-            "id": "1",
-            "title": "عرض سعر جديد",
-            "message":
-                "قام الفني أحمد بتقديم عرض سعر بقيمة 450 ليرة على طلب صيانة المكيف الخاص بك.",
-            "time": "منذ دقيقتين",
-            "type": "offer", // لتحديد الأيقونة واللون ديناميكياً
-            "isRead": false, // حالة القراءة
-          },
-          {
-            "id": "2",
-            "title": "تم قبول العرض",
-            "message":
-                "تأكيد: تم اعتماد الفني خالد لبدء صيانة الغسالة، وهو في طريقه إليك الآن.",
-            "time": "منذ ساعة",
-            "type": "progress",
-            "isRead": false,
-          },
-          {
-            "id": "3",
-            "title": "اكتمل الطلب بنجاح",
-            "message":
-                "لقد قام الفني بإنهاء العمل ومسح الـ QR بنجاح. الرجاء تقييم مقدم الخدمة الآن.",
-            "time": "أمس",
-            "type": "completed",
-            "isRead": true,
-          },
-        ];
-        _isLoading = false; // إنهاء حالة التحميل
-      });
-    }
+  String _formatDate(DateTime date) {
+    final localDate = date.toLocal();
+
+    return '${localDate.year}-'
+        '${localDate.month.toString().padLeft(2, '0')}-'
+        '${localDate.day.toString().padLeft(2, '0')} '
+        '${localDate.hour.toString().padLeft(2, '0')}:'
+        '${localDate.minute.toString().padLeft(2, '0')}';
   }
 
-  // دالة مساعدة لتحديد أيقونة ولون الإشعار بناءً على نوعه (Type) ليعطي مظهراً فخماً
-  IconData _getIcon(String type) {
+  IconData _notificationIcon(int type) {
     switch (type) {
-      case 'offer':
+      case 0:
         return Icons.local_offer_rounded;
-      case 'progress':
-        return Icons.build_circle_rounded;
-      case 'completed':
+      case 5:
         return Icons.check_circle_rounded;
+      case 11:
+        return Icons.cancel_rounded;
       default:
         return Icons.notifications_rounded;
-    }
-  }
-
-  Color _getIconColor(String type) {
-    switch (type) {
-      case 'offer':
-        return Colors.blue;
-      case 'progress':
-        return Colors.orange;
-      case 'completed':
-        return Colors.green;
-      default:
-        return AppColors.primary;
     }
   }
 
@@ -96,190 +59,147 @@ class _NotificationPage extends State<NotificationPage> {
         elevation: 0,
         centerTitle: true,
         title: const Text(
-          "الإشعارات والتنبيهات",
+          'الإشعارات',
           style: TextStyle(
             fontFamily: 'Cairo',
             fontWeight: FontWeight.bold,
-            fontSize: 18,
             color: AppColors.textPrimary,
           ),
         ),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: AppColors.textPrimary,
-            size: 20,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          if (!_isLoading && _notifications.isNotEmpty)
-            IconButton(
-              icon: const Icon(
-                Icons.done_all_rounded,
-                color: AppColors.primary,
-                size: 22,
-              ),
-              tooltip: "تحديد الكل كمقروء",
-              onPressed: () {
-                setState(() {
-                  for (var n in _notifications) {
-                    n['isRead'] = true;
-                  }
-                });
-              },
-            ),
-        ],
       ),
-      body: _buildBody(),
-    );
-  }
+      body: Consumer<NotificationProvider>(
+        builder: (context, notificationProvider, child) {
+          if (notificationProvider.isLoadingNotifications) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-  // بناء محتوى الشاشة بناءً على الحالات الرسومية الثلاث
-  Widget _buildBody() {
-    // 1. حالة التحميل (Loading State)
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-        ),
-      );
-    }
-
-    // 2. حالة القائمة الفارغة (Empty State)
-    if (_notifications.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.notifications_off_rounded,
-                  size: 64,
-                  color: AppColors.textSecondary.withOpacity(0.4),
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                "صندوق الإشعارات فارغ",
-                style: TextStyle(
-                  fontFamily: 'Cairo',
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                "لا توجد أي تنبيهات أو تحديثات بخصوص طلباتك حالياً. سيتم إشعارك فور حدوث أي جديد.",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'Cairo',
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    // 3. حالة قائمة الإشعارات (List State)
-    return RefreshIndicator(
-      color: AppColors.primary,
-      onRefresh: () async {
-        setState(() => _isLoading = true);
-        await _fetchNotificationsMock();
-      },
-      child: ListView.builder(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        itemCount: _notifications.length,
-        itemBuilder: (context, index) {
-          final item = _notifications[index];
-          final bool isRead = item['isRead'] ?? false;
-
-          return Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(
-              // إذا كان الإشعار غير مقروء، نضع خلفية خفيفة جداً لتمييزه
-              color: isRead
-                  ? AppColors.surface
-                  : AppColors.primary.withOpacity(0.04),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isRead
-                    ? AppColors.primary.withOpacity(0.03)
-                    : AppColors.primary.withOpacity(0.1),
-                width: 1,
-              ),
-            ),
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 10,
-              ),
-              leading: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: _getIconColor(item['type']).withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  _getIcon(item['type']),
-                  color: _getIconColor(item['type']),
-                  size: 24,
-                ),
-              ),
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          if (notificationProvider.notificationsError != null) {
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    item['title'],
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      fontSize: 14,
-                      fontWeight: isRead ? FontWeight.bold : FontWeight.w900,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  Text(
-                    item['time'],
+                    notificationProvider.notificationsError!,
+                    textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontFamily: 'Cairo',
-                      fontSize: 11,
-                      color: AppColors.textSecondary,
+                      color: Colors.red,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: () {
+                      context.read<NotificationProvider>().getNotifications();
+                    },
+                    child: const Text(
+                      'إعادة المحاولة',
+                      style: TextStyle(fontFamily: 'Cairo'),
                     ),
                   ),
                 ],
               ),
-              subtitle: Padding(
-                padding: const EdgeInsets.only(top: 6),
-                child: Text(
-                  item['message'],
-                  style: TextStyle(
-                    fontFamily: 'Cairo',
-                    fontSize: 12,
-                    color: isRead
-                        ? AppColors.textSecondary
-                        : AppColors.textPrimary.withOpacity(0.8),
-                    height: 1.4,
-                  ),
+            );
+          }
+
+          final notifications = notificationProvider.notifications;
+
+          if (notifications.isEmpty) {
+            return const Center(
+              child: Text(
+                'لا توجد إشعارات حاليًا',
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  color: AppColors.textSecondary,
                 ),
               ),
-              onTap: () {
-                // عند الضغط على الإشعار يتم تحويل حالته إلى مقروء تلقائياً
-                setState(() {
-                  _notifications[index]['isRead'] = true;
-                });
+            );
+          }
+
+          return RefreshIndicator(
+            onRefresh: notificationProvider.getNotifications,
+            child: ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: notifications.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final notification = notifications[index];
+
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: notification.isRead
+                        ? AppColors.surface
+                        : AppColors.primary.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: notification.isRead
+                          ? Colors.transparent
+                          : AppColors.primary.withOpacity(0.25),
+                    ),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          _notificationIcon(notification.type),
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              notification.title,
+                              style: TextStyle(
+                                fontFamily: 'Cairo',
+                                fontSize: 15,
+                                fontWeight: notification.isRead
+                                    ? FontWeight.normal
+                                    : FontWeight.bold,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              notification.message,
+                              style: const TextStyle(
+                                fontFamily: 'Cairo',
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              _formatDate(notification.createdAt),
+                              style: const TextStyle(
+                                fontFamily: 'Cairo',
+                                fontSize: 11,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (!notification.isRead)
+                        const Padding(
+                          padding: EdgeInsets.only(top: 4),
+                          child: CircleAvatar(
+                            radius: 4,
+                            backgroundColor: AppColors.primary,
+                          ),
+                        ),
+                    ],
+                  ),
+                );
               },
             ),
           );

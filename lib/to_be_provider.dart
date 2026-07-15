@@ -107,7 +107,7 @@ class _ToBeProvider extends State<ToBeProvider> {
                   }
 
                   return DropdownButtonFormField<int>(
-                    value: _selectedSpecializationId,
+                    initialValue: _selectedSpecializationId,
                     hint: const Text(
                       "اضغط لاختيار تخصصك المهني",
                       style: TextStyle(
@@ -135,7 +135,7 @@ class _ToBeProvider extends State<ToBeProvider> {
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
                         borderSide: BorderSide(
-                          color: AppColors.primary.withOpacity(0.05),
+                          color: AppColors.primary.withValues(alpha: 0.05),
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(
@@ -216,7 +216,7 @@ class _ToBeProvider extends State<ToBeProvider> {
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: BorderSide(
-                      color: AppColors.primary.withOpacity(0.05),
+                      color: AppColors.primary.withValues(alpha: 0.05),
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(

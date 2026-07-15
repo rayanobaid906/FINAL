@@ -157,7 +157,7 @@ class _RatingPageState extends State<RatingPage> {
                     iconSize: 44,
                     color: starValue <= _ratingValue
                         ? const Color(0xFFFFB03A)
-                        : AppColors.textSecondary.withOpacity(0.4),
+                        : AppColors.textSecondary.withValues(alpha: 0.4),
                     onPressed: () {
                       setState(() {
                         _ratingValue = starValue;
@@ -221,7 +221,7 @@ class _RatingPageState extends State<RatingPage> {
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: BorderSide(
-                      color: AppColors.primary.withOpacity(0.05),
+                      color: AppColors.primary.withValues(alpha: 0.05),
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(

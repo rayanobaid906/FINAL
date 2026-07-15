@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:fix_it/models/rating_summary_model.dart';
 import 'package:flutter/material.dart';
 import 'package:fix_it/models/provider_profile_model.dart';
 import 'package:fix_it/services/api_services.dart';
@@ -126,5 +127,60 @@ Future<void> getSubscriptionStatus() async {
     notifyListeners();
   }
 }
+RatingSummaryModel? ratingSummary;
+
+bool isLoadingRatingSummary = false;
+
+String? ratingSummaryError;
+
+Future<void> getRatingSummary(
+  int providerProfileId,
+) async {
+  try {
+    isLoadingRatingSummary = true;
+    ratingSummaryError = null;
+    notifyListeners();
+
+    ratingSummary =
+        await apiService.getProviderRatingSummary(
+      providerProfileId,
+    );
+  } on DioException catch (e) {
+    debugPrint(
+      'RATING SUMMARY STATUS: ${e.response?.statusCode}',
+    );
+
+    debugPrint(
+      'RATING SUMMARY DATA: ${e.response?.data}',
+    );
+
+    debugPrint(
+      'RATING SUMMARY MESSAGE: ${e.message}',
+    );
+
+    final message =
+        e.response?.data?.toString() ?? '';
+
+    ratingSummaryError = message.isNotEmpty
+        ? message
+        : 'فشل تحميل ملخص التقييم';
+  } catch (e) {
+    debugPrint(
+      'RATING SUMMARY UNKNOWN ERROR: $e',
+    );
+
+    ratingSummaryError =
+        'حدث خطأ غير متوقع';
+  } finally {
+    isLoadingRatingSummary = false;
+    notifyListeners();
+  }
+}
+
+
+
+
+
+
 
 }

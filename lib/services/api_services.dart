@@ -1,5 +1,8 @@
 import 'package:dio/dio.dart';
+import 'package:fix_it/models/auth_refresh_model.dart';
+import 'package:fix_it/models/completion_qr_model.dart';
 import 'package:fix_it/models/provider_profile_model.dart';
+import 'package:fix_it/models/rating_summary_model.dart';
 import 'package:fix_it/token_storage.dart';
 import 'package:fix_it/models/specialization_model.dart';
 import 'package:fix_it/models/order_model.dart';
@@ -8,60 +11,67 @@ import 'package:fix_it/models/subscription_plan_model.dart';
 import 'package:fix_it/models/subscription_payment_request_model.dart';
 import 'package:fix_it/models/provider_subscription_model.dart';
 import 'package:fix_it/models/offer_model.dart';
+import 'package:fix_it/models/notification_model.dart';
+import 'package:fix_it/services/auth_interceptor.dart';
 
 class ApiService {
   final TokenStorage tokenStorage = TokenStorage(); //*this is instance of token
 
-  late final Dio dio =
-      Dio(
-          BaseOptions(
-            baseUrl:
-                'http://192.168.186.80:5154/api/', //*this is the base url of backend
-            headers: {
-              'Content-Type': 'application/json',
-            }, //* this is the format of data
-          ),
-        )
-        ..interceptors.add(
-          InterceptorsWrapper(
-            onRequest: (options, handler) async {
-              final token = await tokenStorage
-                  .getAccessToken(); //* before get anything he get accesstoken
 
-              print('REQUEST URL: ${options.baseUrl}${options.path}');
-              print('TOKEN SENT: $token');
+late final Dio dio;
 
-              if (token != null && token.isNotEmpty) {
-                //* that mean if have token put it in the headers
-                options.headers['Authorization'] = 'Bearer $token';
-              }
+ApiService() {
 
-              print('REQUEST HEADERS: ${options.headers}');
-              print('REQUEST DATA: ${options.data}');
+  dio = Dio(
+    BaseOptions(
+      baseUrl:
+          'http://192.168.1.5:5154/api/',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    ),
+  );
 
-              return handler.next(options); //* this is the end of interceptors
-            },
-          ),
-        );
-            //*_____________________________*//
-            //*this is for login endpoint*//
+
+  dio.interceptors.add(
+    AuthInterceptor(
+      tokenStorage: tokenStorage,
+      dio: dio,
+    ),
+  );
+
+}
+  //*_____________________________*//
+  //*this is for login endpoint*//
   Future<Response> login(String email, String password) async {
     final response = await dio.post(
-      'Auth/login',       //*address of api 
+      'Auth/login', //*address of api
       data: {'email': email, 'password': password},
     );
 
-    final accessToken = response.data['accessToken']; //*if data is okay he return access 
+    final accessToken =
+        response.data['accessToken']; //*if data is okay he return access
     final refreshToken = response.data['refreshToken']; //* and refresh token
 
     if (accessToken != null) {
-      await tokenStorage.saveTokens(accessToken, refreshToken); //*to save token 
+      await tokenStorage.saveTokens(accessToken, refreshToken); //*to save token
     }
 
     return response;
   }
-    //*__________________________*//
-    //*this is for register*//
+        //*___________________________*//
+        //* this is for refresh token*//
+  Future<AuthRefreshModel> refreshToken(String refreshToken) async {
+    final response = await dio.post(
+      'Auth/refresh',
+      data: {'refreshToken': refreshToken},
+    );
+
+    return AuthRefreshModel.fromJson(response.data);
+  }
+
+  //*__________________________*//
+  //*this is for register*//
   Future<Response> register(
     String fullName,
     String email,
@@ -78,34 +88,37 @@ class ApiService {
       },
     );
   }
-       //*_____________________________*//
-       //* this is for verify email*//
+
+  //*_____________________________*//
+  //* this is for verify email*//
   Future<Response> verifyEmail(String email, String code) async {
     return await dio.post(
       'Auth/verify-email',
       data: {'email': email, 'code': code},
     );
   }
+
   //*_____________________________*//
   //*this is for for logout*//
   Future<void> logout() async {
-    await tokenStorage.clearTokens(); //*this is for deleate the token 
+    await tokenStorage.clearTokens(); //*this is for deleate the token
   }
-       //*_____________________________*//
-       //*this is for get specialization*//
-  Future<List<SpecializationModel>> getSpecializations() async {
-   // print("TOKEN: ${await tokenStorage.getAccessToken()}");
 
-    final response = await dio.get('specializations'); //*to get spec from db 
+  //*_____________________________*//
+  //*this is for get specialization*//
+  Future<List<SpecializationModel>> getSpecializations() async {
+    // print("TOKEN: ${await tokenStorage.getAccessToken()}");
+
+    final response = await dio.get('specializations'); //*to get spec from db
 
     // print("STATUS: ${response.statusCode}");
     // print("DATA: ${response.data}");
 
     // print('RAW SPECIALIZATIONS: ${response.data}');
-      //*that mean the dio return data in list dynamic and i change it into model type 
-    final List<dynamic> data = response.data; 
+    //*that mean the dio return data in list dynamic and i change it into model type
+    final List<dynamic> data = response.data;
 
-    return data  //*to change form 
+    return data //*to change form
         .map(
           (item) => SpecializationModel.fromJson(item as Map<String, dynamic>),
         )
@@ -113,7 +126,6 @@ class ApiService {
   }
   //*_____________________________*//
   //*this is for create order*//
-
 
   Future<Response> createOrder({
     required int specializationId,
@@ -133,8 +145,9 @@ class ApiService {
       },
     );
   }
-             //*_____________________________*//
-             //*this is for get my orders *//
+
+  //*_____________________________*//
+  //*this is for get my orders *//
   Future<List<OrderModel>> getMyOrders() async {
     final response = await dio.get('orders/my');
 
@@ -144,20 +157,23 @@ class ApiService {
         .map((item) => OrderModel.fromJson(item as Map<String, dynamic>))
         .toList();
   }
-               //*_____________________________*//
-               //*this is for get orderaccording id*//
+
+  //*_____________________________*//
+  //*this is for get orderaccording id*//
   Future<OrderModel> getOrderById(int id) async {
     final response = await dio.get('orders/$id');
 
     return OrderModel.fromJson(response.data as Map<String, dynamic>);
   }
-          //*_____________________________*//
-          //*this is for cancel the order according the id *//
+
+  //*_____________________________*//
+  //*this is for cancel the order according the id *//
   Future<void> cancelOrder(int orderId) async {
     await dio.patch('orders/$orderId/cancel');
   }
-            //*_____________________________*//
-            //* this is for update order*//
+
+  //*_____________________________*//
+  //* this is for update order*//
   Future<Response> updateOrder({
     required int orderId,
     required int specializationId,
@@ -209,8 +225,9 @@ class ApiService {
       response.data as Map<String, dynamic>,
     );
   }
-         //*_____________________________*//
-         //*this is for available order for provider*//
+
+  //*_____________________________*//
+  //*this is for available order for provider*//
   Future<List<OrderModel>> getAvailableProviderOrders() async {
     final response = await dio.get('provider/orders/available');
 
@@ -220,8 +237,9 @@ class ApiService {
         .map((item) => OrderModel.fromJson(item as Map<String, dynamic>))
         .toList();
   }
-             //*_____________________________*//
-             //*this is for order assigned to the provider*//
+
+  //*_____________________________*//
+  //*this is for order assigned to the provider*//
   Future<List<OrderModel>> getAssignedProviderOrders() async {
     final response = await dio.get('provider/orders/assigned');
 
@@ -376,26 +394,53 @@ class ApiService {
     await dio.patch('offers/$offerId/cancel');
   }
 
-    Future<void> rejectOffer(int offerId) async {
-      await dio.patch('offers/$offerId/reject');
-    }
+  Future<void> rejectOffer(int offerId) async {
+    await dio.patch('offers/$offerId/reject');
+  }
 
+  //*____________________________*//
+  //*this is for ratiend the order after compleated*//
+  Future<void> createRating({required int orderId, required int value}) async {
+    await dio.post('ratings', data: {'orderId': orderId, 'value': value});
+  }
 
-    //*____________________________*//
-    //*this is for ratiend the order after compleated*//
-Future<void> createRating({
-  required int orderId,
-  required int value,
-}) async {
-  await dio.post(
-    'ratings',
-    data: {
-      'orderId': orderId,
-      'value': value,
-    },
-  );
-}
+  Future<List<NotificationModel>> getNotifications() async {
+    final response = await dio.get('notifications');
 
+    final List data = response.data as List;
 
+    return data
+        .map((e) => NotificationModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
 
+  Future<void> markAllNotificationsAsRead() async {
+    await dio.patch('notifications/read-all');
+  }
+
+  Future<RatingSummaryModel> getProviderRatingSummary(
+    int providerProfileId,
+  ) async {
+    final response = await dio.get(
+      'providers/$providerProfileId/rating-summary',
+    );
+
+    return RatingSummaryModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<CompletionQrModel> generateCompletionQr(int orderId) async {
+    final response = await dio.post('orders/$orderId/completion-qr');
+
+    return CompletionQrModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<void> completeOrderByQr({
+    required int orderId,
+    required String token,
+  }) async {
+    await dio.post(
+      'orders/complete-by-qr',
+      data: {'orderId': orderId, 'token': token},
+    );
+  }
 }

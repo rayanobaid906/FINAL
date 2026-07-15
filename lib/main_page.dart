@@ -1,4 +1,6 @@
+import 'package:fix_it/about_us.dart';
 import 'package:fix_it/provider_main_page.dart';
+import 'package:fix_it/providers/notification_provider.dart';
 import 'package:fix_it/providers/provider_profile_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:fix_it/app_colors.dart';
@@ -6,6 +8,10 @@ import 'package:fix_it/home_page.dart';
 import 'package:fix_it/to_be_provider.dart';
 import 'package:fix_it/order_situation.dart';
 import 'package:provider/provider.dart';
+import 'package:fix_it/notification_page.dart';
+import 'package:provider/provider.dart';
+import 'package:fix_it/providers/auth_provider.dart';
+import 'package:fix_it/login_page.dart';
 // import 'package:google_nav_bar/google_nav_bar.dart';
 // import 'package:persistent_bottom_nav_bar_v2/persistent_bottom_nav_bar_v2.dart';
 
@@ -50,7 +56,11 @@ class _MainPageState extends State<MainPage> {
                 size: 26,
               ),
               onPressed: () {
-                print("تم الضغط على زر الإشعارات المبعد عن الحافة");
+                // 2. فتح صفحة الإشعارات
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const NotificationsPage()),
+                );
               },
             ),
           ),
@@ -63,7 +73,7 @@ class _MainPageState extends State<MainPage> {
             color: AppColors.surface,
             border: Border(
               left: BorderSide(
-                color: AppColors.primary.withOpacity(0.4),
+                color: AppColors.primary.withValues(alpha: 0.4),
                 width: 1.5,
               ),
             ),
@@ -117,62 +127,61 @@ class _MainPageState extends State<MainPage> {
                   ),
                 ),
               ),
+                 
+
+
+              // Padding(
+              //   padding: const EdgeInsets.symmetric(
+              //     horizontal: 5.0,
+              //     vertical: 4.0,
+              //   ),
+              // child: Card(
+              //   color: const Color(0xFF222539),
+              //   shape: RoundedRectangleBorder(
+              //     borderRadius: BorderRadius.circular(12),
+              //   ),
+              //   child: ListTile(
+              //     leading: const Icon(
+              //       Icons.settings_rounded,
+              //       color: Colors.amberAccent,
+              //     ), // أيقونة بلون دافئ مميز
+              //     title: const Text(
+              //       "الإعدادات",
+              //       style: TextStyle(
+              //         fontFamily: 'Cairo',
+              //         color: AppColors.textPrimary,
+              //         fontWeight: FontWeight.bold,
+              //       ),
+              //     ),
+              //     subtitle: const Text(
+              //       "العناوين، التنبيهات، والأمان",
+              //       style: TextStyle(
+              //         fontFamily: 'Cairo',
+              //         color: AppColors.textSecondary,
+              //         fontSize: 11,
+              //       ),
+              //     ),
+              //     trailing: const Icon(
+              //       Icons.arrow_back_ios_new_rounded,
+              //       color: AppColors.textSecondary,
+              //       size: 14,
+              //     ),
+              //     onTap: () => Navigator.pop(context),
+              //   ),
+              // ),
+              //),
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 5.0,
-                  vertical: 4.0,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 5.0),
                 child: Card(
                   color: const Color(0xFF222539),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: ListTile(
-                    leading: const Icon(
-                      Icons.settings_rounded,
-                      color: Colors.amberAccent,
-                    ), // أيقونة بلون دافئ مميز
-                    title: const Text(
-                      "الإعدادات",
-                      style: TextStyle(
-                        fontFamily: 'Cairo',
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    subtitle: const Text(
-                      "العناوين، التنبيهات، والأمان",
-                      style: TextStyle(
-                        fontFamily: 'Cairo',
-                        color: AppColors.textSecondary,
-                        fontSize: 11,
-                      ),
-                    ),
-                    trailing: const Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      color: AppColors.textSecondary,
-                      size: 14,
-                    ),
-                    onTap: () => Navigator.pop(context),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 5.0),
-                child: Card(
-                  color: const Color(
-                    0xFF1E293B,
-                  ), // درجة مختلفة قليلاً لتمييز خيار الورش والعمل
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
                     side: BorderSide(
-                      color: AppColors.primary.withOpacity(0.3),
+                      color: AppColors.primary.withValues(alpha: 0.3),
                       width: 1,
                     ), // تحديد مضيء خفيف
                   ),
                   child: ListTile(
-                    
-                    
                     leading: const Icon(
                       Icons.build_circle_rounded,
                       color: AppColors.primary,
@@ -198,83 +207,163 @@ class _MainPageState extends State<MainPage> {
                       color: AppColors.primary,
                       size: 14,
                     ),
-                        
-onTap: () async {
-  Navigator.pop(context);
 
-  final providerProfile =
-      context.read<ProviderProfileProvider>();
-
-  final hasProfile =
-      await providerProfile.checkProviderProfile();
-
-  if (!context.mounted) return;
-
-  if (hasProfile) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const ProviderMainPage(),
-      ),
-    );
-  } else {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const ToBeProvider(),
-      ),
-    );
-  }
-},
-
-
-
-
-                ),
-              ),
-              ),
-              // --------------------------------------------------------
-              // سبيس أو مساحة فارغة سحرية (Spacer) تدفع أي كود تحتها إلى قاع الشاشة فوراً
-              const Spacer(),
-              // --------------------------------------------------------
-
-              // --- كارت تسجيل الخروج في أسفل الـ Drawer تماماً ---
-              Padding(
-                padding: const EdgeInsets.only(
-                  bottom: 20.0,
-                ), // مسافة أمان من الأسفل
-                child: Card(
-                  color: const Color(
-                    0xFF2A1B24,
-                  ), // درجة داكنة مائلة للأحمر لتناسب مفهوم الـ Logout
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(
-                      color: Colors.redAccent.withOpacity(0.2),
-                      width: 1,
-                    ), // إطار أحمر خفيف
-                  ),
-                  child: ListTile(
-                    leading: const Icon(
-                      Icons.logout_rounded,
-                      color: Colors.redAccent,
-                    ), // أيقونة باللون الأحمر
-                    title: const Text(
-                      "تسجيل الخروج",
-                      style: TextStyle(
-                        fontFamily: 'Cairo',
-                        color: Colors.redAccent, // نص أحمر تحذيري أنيق
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                      ),
-                    ),
-                    onTap: () {
+                    onTap: () async {
                       Navigator.pop(context);
-                      print("تم الضغط على تسجيل الخروج");
+
+                      final providerProfile = context
+                          .read<ProviderProfileProvider>();
+
+                      final hasProfile = await providerProfile
+                          .checkProviderProfile();
+
+                      if (!context.mounted) return;
+
+                      if (hasProfile) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ProviderMainPage(),
+                          ),
+                        );
+                      } else {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ToBeProvider(),
+                          ),
+                        );
+                      }
                     },
                   ),
                 ),
               ),
+              SizedBox(height: 450,),
+            Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 5.0,
+                  vertical: 4.0,
+                ),
+                child: Card(
+                  color: const Color(0xFF222539),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ListTile(
+                    leading: const Icon(
+                     Icons.info_outline_rounded,
+                      color: AppColors.primary,
+                    ),
+                    title: const Text(
+                        "لمحة عن التطبيق",
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    trailing: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      color: AppColors.textSecondary,
+                      size: 14,
+                    ),
+                    onTap: () => Navigator.pop(context),
+                  ),
+                ),
+              ),
+             
+
+              // --------------------------------------------------------
+              // سبيس أو مساحة فارغة سحرية (Spacer) تدفع أي كود تحتها إلى قاع الشاشة فوراً
+              const Spacer(),
+              // --------------------------------------------------------
+Consumer<AuthProvider>(
+  builder: (context, authProvider, child) {
+    return Padding(
+      padding: const EdgeInsets.only(
+        bottom: 20.0,
+      ),
+      child: Card(
+        color: const Color(
+          0xFF2A1B24,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(
+            color: Colors.redAccent.withValues(
+              alpha: 0.2,
+            ),
+            width: 1,
+          ),
+        ),
+        child: ListTile(
+          leading: authProvider.isLoggingOut
+              ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.redAccent,
+                  ),
+                )
+              : const Icon(
+                  Icons.logout_rounded,
+                  color: Colors.redAccent,
+                ),
+
+          title: Text(
+            authProvider.isLoggingOut
+                ? 'جاري تسجيل الخروج...'
+                : 'تسجيل الخروج',
+            style: const TextStyle(
+              fontFamily: 'Cairo',
+              color: Colors.redAccent,
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+            ),
+          ),
+
+          onTap: authProvider.isLoggingOut
+              ? null
+              : () async {
+                  Navigator.pop(context);
+
+                  final success =
+                      await authProvider.logout();
+
+                  if (!context.mounted) return;
+
+                  if (success) {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            const LoginPage(),
+                      ),
+                      (route) => false,
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          authProvider.logoutError ??
+                              'فشل تسجيل الخروج',
+                          style: const TextStyle(
+                            fontFamily: 'Cairo',
+                          ),
+                        ),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                },
+        ),
+      ),
+    );
+  },
+),
+             
             ],
           ),
         ),
@@ -295,12 +384,12 @@ onTap: () async {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withOpacity(0.2),
+              color: AppColors.primary.withValues(alpha: 0.2),
               blurRadius: 10,
               offset: const Offset(0, 0),
             ),
             BoxShadow(
-              color: AppColors.primary.withOpacity(0.2),
+              color: AppColors.primary.withValues(alpha: 0.2),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
