@@ -165,140 +165,153 @@ class _OrderOffersPageState extends State<OrderOffersPage> {
                         ),
                       ],
                       if (offer.status == 0)
-  Column(
-    children: [
-      SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          onPressed: () async {
-            final success = await context
-                .read<OfferProvider>()
-                .acceptInspectionOffer(offer.id);
+                        Column(
+                          children: [
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  final success = await context
+                                      .read<OfferProvider>()
+                                      .acceptInspectionOffer(offer.id);
 
-            if (!mounted) return;
+                                  if (!mounted) return;
 
-            final provider = context.read<OfferProvider>();
+                                  final provider = context
+                                      .read<OfferProvider>();
 
-            if (success) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'تم قبول العرض للفحص بنجاح',
-                    style: TextStyle(fontFamily: 'Cairo'),
-                  ),
-                  backgroundColor: Colors.green,
-                ),
-              );
+                                  if (success) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'تم قبول العرض للفحص بنجاح',
+                                          style: TextStyle(fontFamily: 'Cairo'),
+                                        ),
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
 
-              await provider.getOrderOffers(widget.orderId);
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    provider.createOfferError ??
-                        'فشل قبول العرض',
-                  ),
-                ),
-              );
-            }
-          },
-          child: const Text('قبول العرض للفحص'),
-        ),
-      ),
-
-      const SizedBox(height: 10),
-
-      SizedBox(
-        width: double.infinity,
-        child: Consumer<OfferProvider>(
-          builder: (context, provider, child) {
-            return OutlinedButton.icon(
-              icon: provider.isRejectingOffer
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : const Icon(Icons.close),
-
-              label: const Text(
-                'رفض العرض',
-                style: TextStyle(
-                  fontFamily: 'Cairo',
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.red,
-              ),
-
-              onPressed: provider.isRejectingOffer
-                  ? null
-                  : () async {
-
-                      final confirm = await showDialog<bool>(
-                        context: context,
-                        builder: (_) => AlertDialog(
-                          title: const Text('رفض العرض'),
-                          content: const Text(
-                            'هل تريد رفض هذا العرض؟',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () =>
-                                  Navigator.pop(context, false),
-                              child: const Text('لا'),
+                                    await provider.getOrderOffers(
+                                      widget.orderId,
+                                    );
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          provider.createOfferError ??
+                                              'فشل قبول العرض',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: const Text('قبول العرض للفحص'),
+                              ),
                             ),
-                            TextButton(
-                              onPressed: () =>
-                                  Navigator.pop(context, true),
-                              child: const Text('نعم'),
+
+                            const SizedBox(height: 10),
+
+                            SizedBox(
+                              width: double.infinity,
+                              child: Consumer<OfferProvider>(
+                                builder: (context, provider, child) {
+                                  return OutlinedButton.icon(
+                                    icon: provider.isRejectingOffer
+                                        ? const SizedBox(
+                                            width: 18,
+                                            height: 18,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                            ),
+                                          )
+                                        : const Icon(Icons.close),
+
+                                    label: const Text(
+                                      'رفض العرض',
+                                      style: TextStyle(
+                                        fontFamily: 'Cairo',
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: Colors.red,
+                                    ),
+
+                                    onPressed: provider.isRejectingOffer
+                                        ? null
+                                        : () async {
+                                            final confirm =
+                                                await showDialog<bool>(
+                                                  context: context,
+                                                  builder: (_) => AlertDialog(
+                                                    title: const Text(
+                                                      'رفض العرض',
+                                                    ),
+                                                    content: const Text(
+                                                      'هل تريد رفض هذا العرض؟',
+                                                    ),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () =>
+                                                            Navigator.pop(
+                                                              context,
+                                                              false,
+                                                            ),
+                                                        child: const Text('لا'),
+                                                      ),
+                                                      TextButton(
+                                                        onPressed: () =>
+                                                            Navigator.pop(
+                                                              context,
+                                                              true,
+                                                            ),
+                                                        child: const Text(
+                                                          'نعم',
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+
+                                            if (confirm != true) return;
+
+                                            final success = await provider
+                                                .rejectOffer(offer.id);
+
+                                            if (!mounted) return;
+
+                                            if (success) {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text('تم رفض العرض'),
+                                                ),
+                                              );
+
+                                              await provider.getOrderOffers(
+                                                widget.orderId,
+                                              );
+                                            } else {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    provider.rejectOfferError ??
+                                                        'فشل رفض العرض',
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          },
+                                  );
+                                },
+                              ),
                             ),
                           ],
                         ),
-                      );
-
-                      if (confirm != true) return;
-
-                      final success = await provider
-                          .rejectOffer(offer.id);
-
-                      if (!mounted) return;
-
-                      if (success) {
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'تم رفض العرض',
-                            ),
-                          ),
-                        );
-
-                        await provider.getOrderOffers(
-                          widget.orderId,
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              provider.rejectOfferError ??
-                                  'فشل رفض العرض',
-                            ),
-                          ),
-                        );
-                      }
-                    },
-            );
-          },
-        ),
-      ),
-    ],
-  ),
                       if (offer.status == 1)
                         Column(
                           children: [

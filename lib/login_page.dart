@@ -1,4 +1,6 @@
 // import 'dart:math';
+import 'package:fix_it/main_page.dart';
+import 'package:fix_it/sign_up.dart';
 import 'package:flutter/material.dart';
 import 'package:fix_it/app_colors.dart';
 import 'package:fix_it/custom_textfiled.dart';
@@ -16,9 +18,10 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   bool _isPasswordHidden = true;
-  
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -37,8 +40,8 @@ class _LoginPageState extends State<LoginPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SizedBox(height: 100),
-              //! this is for icon in the middle of page 
-              Icon(             
+              //! this is for icon in the middle of page
+              Icon(
                 Icons.home_repair_service_rounded,
                 size: 100,
                 color: AppColors.primary,
@@ -46,7 +49,6 @@ class _LoginPageState extends State<LoginPage> {
               SizedBox(height: 24),
               //!this is for text under the icon _____________________________________
               Text(
-
                 "Welcome Back",
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -56,11 +58,9 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               SizedBox(height: 8),
-                  //!this is a text to welcome to user _______________________________________
 
+              //!this is a text to welcome to user _______________________________________
               Text(
-                 
-
                 "login to continue the app ",
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -92,101 +92,174 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ],
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [ 
-                    //!this is the text field of eamil___________________________________
-                    CustomTextField(
-                      controller: _emailController,
-                      hintText: 'Email',
-                      prefixIcon: Icons.email_outlined,
-                    ),
-                    SizedBox(height: 16),
-                        //! this is the text field of passowrd_______________________________
-                    CustomTextField(
-                      controller: _passwordController,
-                      hintText: 'Password',
-                      prefixIcon: Icons.lock_outline,
-                      obscureText: _isPasswordHidden,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _isPasswordHidden
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                          color: AppColors.textSecondary,
-                        ),
-                        onPressed: () {
-                          // تحديث الحالة لتبديل الرؤية
-                          setState(() {
-                            _isPasswordHidden = !_isPasswordHidden;
-                          });
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      //!this is the text field of eamil___________________________________
+                      CustomTextField(
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter your email';
+                          }
+
+                          final email = value.trim();
+
+                          if (!email.contains('@') || !email.contains('.')) {
+                            return 'Please enter a valid email';
+                          }
+
+                          return null;
                         },
+                        controller: _emailController,
+                        hintText: 'Email',
+                        prefixIcon: Icons.email_outlined,
                       ),
-                    ),
-                    SizedBox(height: 12),
-                    Container(
-                      //! this is for forget passwrod_____________________________
-                      padding: EdgeInsets.only(left: 150),
-                      child: TextButton(
-                        onPressed: () {},
-                        child: Text(
-                          "forget password ?",
-                          textAlign: TextAlign.right,
-                          style: TextStyle(
-                            fontFamily: 'Cairo',
-                            fontSize: 14,
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.bold,
+                      SizedBox(height: 16),
+                      //! this is the text field of passowrd_______________________________
+                      CustomTextField(
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your password';
+                          }
+
+                          return null;
+                        },
+                        controller: _passwordController,
+                        hintText: 'Password',
+                        prefixIcon: Icons.lock_outline,
+                        obscureText: _isPasswordHidden,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _isPasswordHidden
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
+                            color: AppColors.textSecondary,
+                          ),
+                          onPressed: () {
+                            // تحديث الحالة لتبديل الرؤية
+                            setState(() {
+                              _isPasswordHidden = !_isPasswordHidden;
+                            });
+                          },
+                        ),
+                      ),
+                      SizedBox(height: 12),
+                      Container(
+                        //! this is for forget passwrod_____________________________
+                        padding: EdgeInsets.only(left: 150),
+                        child: TextButton(
+                          onPressed: () {},
+                          child: Text(
+                            "forget password ?",
+                            textAlign: TextAlign.right,
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 14,
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               SizedBox(height: 24),
-                    //!this is the login button_________________________________________
-              ElevatedButton(
-                onPressed: () async {
-                  final authProvider = Provider.of<AuthProvider>(
-                    context,
-                    listen: false,
+              //!this is the login button_________________________________________
+              Consumer<AuthProvider>(
+                builder: (context, authProvider, child) {
+                  return ElevatedButton(
+                    onPressed: authProvider.isLoading
+                        ? null
+                        : () async {
+                            // 1) Validation
+                            if (!_formKey.currentState!.validate()) {
+                              return;
+                            }
+
+                            // 2) Login request
+                            bool success = await authProvider.login(
+                              _emailController.text.trim(),
+                              _passwordController.text.trim(),
+                            );
+
+                            if (!context.mounted) return;
+
+                            // 3) Result
+                            if (success) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    "Login Success 🔥",
+                                    style: TextStyle(fontFamily: 'Cairo'),
+                                  ),
+
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+
+                              // هنا بعد النجاح تذهب للـ MainPage
+                              
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const MainPage(),
+                  ),
+                );
+                
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    authProvider.authError ?? "Login Failed ❌",
+
+                                    style: const TextStyle(fontFamily: 'Cairo'),
+                                  ),
+
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          },
+
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+
+                    child: authProvider.isLoading
+                        ? const SizedBox(
+                            height: 22,
+                            width: 22,
+
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text(
+                            "Login",
+
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+
+                              fontSize: 16,
+
+                              fontWeight: FontWeight.bold,
+
+                              color: Colors.white,
+                            ),
+                          ),
                   );
-
-                  bool success = await authProvider.login(
-                    _emailController.text.trim(),
-                    _passwordController.text.trim(),
-                  );
-
-                  if (success) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Login Success 🔥")),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Login Failed ❌")),
-                    );
-                  }
-                 final token = await TokenStorage().getAccessToken();
-
                 },
-
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  padding: EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-                child: Text(
-                  "Login",
-                  style: TextStyle(
-                    fontFamily: 'Cairo',
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
               ),
               SizedBox(height: 14),
 
@@ -202,7 +275,12 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const SignupPage()),
+                      );
+                    },
                     child: Text(
                       "Sign Up",
                       style: TextStyle(

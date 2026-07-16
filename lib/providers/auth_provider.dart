@@ -8,35 +8,45 @@ class AuthProvider extends ChangeNotifier {
   final ApiService apiService =
       ApiService(); //*this is instance of api services
   final TokenStorage tokenStorage = TokenStorage();
-
+  String? authError;
   //*_____________________________*//
   //*this is for login*//
   bool isLoading = false; //*this is for if have a operation
   Future<bool> login(String email, String password) async {
     try {
       isLoading = true;
-      notifyListeners(); //*to tell to the ui to change the state to true
+      authError = null;
+      notifyListeners();
 
-      final response = await apiService.login(email, password);
+      await apiService.login(email, password);
 
-      
-      // print(response.data);
+      return true;
+    } on DioException catch (e) {
+      debugPrint('LOGIN STATUS: ${e.response?.statusCode}');
+      debugPrint('LOGIN DATA: ${e.response?.data}');
+      debugPrint('LOGIN MESSAGE: ${e.message}');
 
-      return true; //*that mean this okay and no exception
-    } catch (e) {
-      if (e is DioException) {
-        debugPrint(
-          'LOGIN STATUS: ${e.response?.statusCode}',
-        ); //*the ? maybe null
-        debugPrint('LOGIN DATA: ${e.response?.data}');
-        debugPrint('LOGIN MESSAGE: ${e.message}');
+      final data = e.response?.data;
+
+      if (data is Map<String, dynamic>) {
+        authError =
+            data['message']?.toString() ??
+            data['title']?.toString() ??
+            'Login failed';
+      } else if (data != null) {
+        authError = data.toString();
       } else {
-        debugPrint('LOGIN ERROR: $e');
+        authError = 'Login failed';
       }
 
       return false;
+    } catch (e) {
+      debugPrint('LOGIN UNKNOWN ERROR: $e');
+
+      authError = 'حدث خطأ غير متوقع';
+      return false;
     } finally {
-      isLoading = false; //*this is for stop the loding
+      isLoading = false;
       notifyListeners();
     }
   }
@@ -62,9 +72,9 @@ class AuthProvider extends ChangeNotifier {
       return false;
     }
   }
+
   //*_____________________________*//
   //*this is for register *//
-
   Future<bool> register(
     String fullName,
     String email,
@@ -73,6 +83,7 @@ class AuthProvider extends ChangeNotifier {
   ) async {
     try {
       isLoading = true;
+      authError = null;
       notifyListeners();
 
       final response = await apiService.register(
@@ -82,17 +93,17 @@ class AuthProvider extends ChangeNotifier {
         password,
       );
 
-      print(response.data);
-      print("REGISTER SUCCESS");
-
       return true;
     } catch (e) {
       if (e is DioException) {
-        debugPrint('REGISTER STATUS: ${e.response?.statusCode}');
-        debugPrint('REGISTER DATA: ${e.response?.data}');
-        debugPrint('REGISTER MESSAGE: ${e.message}');
+        authError =
+            e.response?.data?['message'] ??
+            e.response?.data?.toString() ??
+            'Register failed';
+
+        debugPrint('REGISTER ERROR: $authError');
       } else {
-        debugPrint('REGISTER ERROR: $e');
+        authError = 'Something went wrong';
       }
 
       return false;
@@ -107,22 +118,37 @@ class AuthProvider extends ChangeNotifier {
   Future<bool> verifyEmail(String email, String code) async {
     try {
       isLoading = true;
+      authError = null;
       notifyListeners();
 
-      final response = await apiService.verifyEmail(email, code);
-
-      print('VERFIY RESPONSE: ${response.data}');
-      print('STATUS CODE: ${response.statusCode}');
+      await apiService.verifyEmail(email, code);
 
       return true;
-    } catch (e) {
-      if (e is DioException) {
-        debugPrint('VERIFY STATUS: ${e.response?.statusCode}');
-        debugPrint('VERIFY DATA: ${e.response?.data}');
-        debugPrint('VERIFY MESSAGE: ${e.message}');
+    } on DioException catch (e) {
+      debugPrint('VERIFY STATUS: ${e.response?.statusCode}');
+
+      debugPrint('VERIFY DATA: ${e.response?.data}');
+
+      debugPrint('VERIFY MESSAGE: ${e.message}');
+
+      final data = e.response?.data;
+
+      if (data is Map<String, dynamic>) {
+        authError =
+            data['message']?.toString() ??
+            data['title']?.toString() ??
+            'Verification failed';
+      } else if (data != null) {
+        authError = data.toString();
       } else {
-        debugPrint('VERIFY ERROR: $e');
+        authError = 'Verification failed';
       }
+
+      return false;
+    } catch (e) {
+      debugPrint('VERIFY UNKNOWN ERROR: $e');
+
+      authError = 'حدث خطأ غير متوقع';
 
       return false;
     } finally {

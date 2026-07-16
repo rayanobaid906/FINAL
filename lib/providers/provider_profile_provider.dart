@@ -4,26 +4,30 @@ import 'package:flutter/material.dart';
 import 'package:fix_it/models/provider_profile_model.dart';
 import 'package:fix_it/services/api_services.dart';
 import 'package:fix_it/models/subscription_status_model.dart';
+
 class ProviderProfileProvider extends ChangeNotifier {
   final ApiService apiService = ApiService();
-
-  ProviderProfileModel? profile;
-
+  bool hasProviderProfile = false;
+  ProviderProfileModel?
+  profile; //*to save my profile this is helpfull to method 2
   bool isLoading = false;
   String? errorMessage;
-
+  //*____________________________*//
+  //*to get my provider profile *//
   Future<bool> checkProviderProfile() async {
     try {
       isLoading = true;
+
       errorMessage = null;
       notifyListeners();
 
       profile = await apiService.getMyProviderProfile();
-
+      hasProviderProfile = true;
       return true;
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
         profile = null;
+        hasProviderProfile = false;
         return false;
       }
 
@@ -40,147 +44,128 @@ class ProviderProfileProvider extends ChangeNotifier {
     }
   }
 
-
+  //*____________________________*//
+  //*to get my provider profile*//
   bool isCreatingProfile = false;
-String? createProfileError;
+  String? createProfileError;
 
-Future<bool> createProviderProfile({
-  required int specializationId,
-  String? bio,
-}) async {
-  try {
-    isCreatingProfile = true;
-    createProfileError = null;
-    notifyListeners();
+  Future<bool> createProviderProfile({
+    required int specializationId,
+    String? bio,
+  }) async {
+    try {
+      isCreatingProfile = true;
+      createProfileError = null;
+      notifyListeners();
 
-    await apiService.createProviderProfile(
-      specializationId: specializationId,
-      bio: bio,
-    );
+      await apiService.createProviderProfile(
+        specializationId: specializationId,
+        bio: bio,
+      );
 
-    profile = await apiService.getMyProviderProfile();
+      profile = await apiService.getMyProviderProfile();
 
-    return true;
-  } catch (e) {
-    createProfileError = 'فشل إنشاء ملف مقدم الخدمة';
-    debugPrint('CREATE PROVIDER PROFILE ERROR: $e');
+      return true;
+    } catch (e) {
+      createProfileError = 'فشل إنشاء ملف مقدم الخدمة';
+      debugPrint('CREATE PROVIDER PROFILE ERROR: $e');
 
-    return false;
-  } finally {
-    isCreatingProfile = false;
-    notifyListeners();
+      return false;
+    } finally {
+      isCreatingProfile = false;
+      notifyListeners();
+    }
   }
-}
-bool isUpdatingProfile = false;
-String? updateProfileError;
 
-Future<bool> updateProviderProfile({
-  required String bio,
-}) async {
-  try {
-    isUpdatingProfile = true;
-    updateProfileError = null;
-    notifyListeners();
+  //*____________________________*//
+  //*this is for update profile *//
+  bool isUpdatingProfile = false;
+  String? updateProfileError;
 
-    profile = await apiService.updateMyProviderProfile(
-      bio: bio,
-    );
+  Future<bool> updateProviderProfile({required String bio}) async {
+    try {
+      isUpdatingProfile = true;
+      updateProfileError = null;
+      notifyListeners();
 
-    return true;
-  } catch (e) {
-    updateProfileError = 'فشل تعديل ملف مقدم الخدمة';
-    debugPrint('UPDATE PROVIDER PROFILE ERROR: $e');
-    return false;
-  } finally {
-    isUpdatingProfile = false;
-    notifyListeners();
+      profile = await apiService.updateMyProviderProfile(bio: bio);
+
+      return true;
+    } catch (e) {
+      updateProfileError = 'فشل تعديل ملف مقدم الخدمة';
+      debugPrint('UPDATE PROVIDER PROFILE ERROR: $e');
+      return false;
+    } finally {
+      isUpdatingProfile = false;
+      notifyListeners();
+    }
+  } //*____________________________*//
+
+  //*this is for get subscribtion status *//
+  SubscriptionStatusModel? subscriptionStatus;
+
+  bool isLoadingSubscriptionStatus = false;
+
+  String? subscriptionStatusError;
+
+  Future<void> getSubscriptionStatus() async {
+    try {
+      isLoadingSubscriptionStatus = true;
+      subscriptionStatusError = null;
+      notifyListeners();
+
+      subscriptionStatus = await apiService.getSubscriptionStatus();
+
+      debugPrint(
+        'HAS ACTIVE SUBSCRIPTION: '
+        '${subscriptionStatus?.hasActiveSubscription}',
+      );
+    } catch (e) {
+      subscriptionStatusError = 'فشل تحميل حالة الاشتراك';
+
+      debugPrint('SUBSCRIPTION STATUS ERROR: $e');
+    } finally {
+      isLoadingSubscriptionStatus = false;
+      notifyListeners();
+    }
   }
-}
-SubscriptionStatusModel? subscriptionStatus;
 
-bool isLoadingSubscriptionStatus = false;
+  //*____________________________*//
+  //* this is for get summary of reating *//
+  RatingSummaryModel? ratingSummary;
 
-String? subscriptionStatusError;
+  bool isLoadingRatingSummary = false;
 
-Future<void> getSubscriptionStatus() async {
-  try {
-    isLoadingSubscriptionStatus = true;
-    subscriptionStatusError = null;
-    notifyListeners();
+  String? ratingSummaryError;
 
-    subscriptionStatus =
-        await apiService.getSubscriptionStatus();
+  Future<void> getRatingSummary(int providerProfileId) async {
+    try {
+      isLoadingRatingSummary = true;
+      ratingSummaryError = null;
+      notifyListeners();
 
-    debugPrint(
-      'HAS ACTIVE SUBSCRIPTION: '
-      '${subscriptionStatus?.hasActiveSubscription}',
-    );
-  } catch (e) {
-    subscriptionStatusError =
-        'فشل تحميل حالة الاشتراك';
+      ratingSummary = await apiService.getProviderRatingSummary(
+        providerProfileId,
+      );
+    } on DioException catch (e) {
+      debugPrint('RATING SUMMARY STATUS: ${e.response?.statusCode}');
 
-    debugPrint(
-      'SUBSCRIPTION STATUS ERROR: $e',
-    );
-  } finally {
-    isLoadingSubscriptionStatus = false;
-    notifyListeners();
+      debugPrint('RATING SUMMARY DATA: ${e.response?.data}');
+
+      debugPrint('RATING SUMMARY MESSAGE: ${e.message}');
+
+      final message = e.response?.data?.toString() ?? '';
+
+      ratingSummaryError = message.isNotEmpty
+          ? message
+          : 'فشل تحميل ملخص التقييم';
+    } catch (e) {
+      debugPrint('RATING SUMMARY UNKNOWN ERROR: $e');
+
+      ratingSummaryError = 'حدث خطأ غير متوقع';
+    } finally {
+      isLoadingRatingSummary = false;
+      notifyListeners();
+    }
   }
-}
-RatingSummaryModel? ratingSummary;
-
-bool isLoadingRatingSummary = false;
-
-String? ratingSummaryError;
-
-Future<void> getRatingSummary(
-  int providerProfileId,
-) async {
-  try {
-    isLoadingRatingSummary = true;
-    ratingSummaryError = null;
-    notifyListeners();
-
-    ratingSummary =
-        await apiService.getProviderRatingSummary(
-      providerProfileId,
-    );
-  } on DioException catch (e) {
-    debugPrint(
-      'RATING SUMMARY STATUS: ${e.response?.statusCode}',
-    );
-
-    debugPrint(
-      'RATING SUMMARY DATA: ${e.response?.data}',
-    );
-
-    debugPrint(
-      'RATING SUMMARY MESSAGE: ${e.message}',
-    );
-
-    final message =
-        e.response?.data?.toString() ?? '';
-
-    ratingSummaryError = message.isNotEmpty
-        ? message
-        : 'فشل تحميل ملخص التقييم';
-  } catch (e) {
-    debugPrint(
-      'RATING SUMMARY UNKNOWN ERROR: $e',
-    );
-
-    ratingSummaryError =
-        'حدث خطأ غير متوقع';
-  } finally {
-    isLoadingRatingSummary = false;
-    notifyListeners();
-  }
-}
-
-
-
-
-
-
-
 }

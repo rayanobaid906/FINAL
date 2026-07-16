@@ -32,6 +32,7 @@ class _MainPageState extends State<MainPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: AppColors.background,
         elevation: 0,
         centerTitle: true,
@@ -127,8 +128,6 @@ class _MainPageState extends State<MainPage> {
                   ),
                 ),
               ),
-                 
-
 
               // Padding(
               //   padding: const EdgeInsets.symmetric(
@@ -172,74 +171,94 @@ class _MainPageState extends State<MainPage> {
               //),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 5.0),
-                child: Card(
-                  color: const Color(0xFF222539),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                      width: 1,
-                    ), // تحديد مضيء خفيف
-                  ),
-                  child: ListTile(
-                    leading: const Icon(
-                      Icons.build_circle_rounded,
-                      color: AppColors.primary,
-                    ),
-                    title: const Text(
-                      "كن مزود خدمة (فني)",
-                      style: TextStyle(
-                        fontFamily: 'Cairo',
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.bold,
+                child: Consumer<ProviderProfileProvider>(
+                  builder: (context, providerProfile, child) {
+                    final hasProfile = providerProfile.hasProviderProfile;
+
+                    return Card(
+                      color: const Color(0xFF222539),
+
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+
+                        side: BorderSide(
+                          color: AppColors.primary.withValues(alpha: 0.3),
+
+                          width: 1,
+                        ),
                       ),
-                    ),
-                    subtitle: const Text(
-                      "انضم إلينا واستقبل طلبات الصيانة",
-                      style: TextStyle(
-                        fontFamily: 'Cairo',
-                        color: AppColors.textSecondary,
-                        fontSize: 11,
+
+                      child: ListTile(
+                        leading: Icon(
+                          hasProfile
+                              ? Icons.engineering_rounded
+                              : Icons.build_circle_rounded,
+
+                          color: AppColors.primary,
+                        ),
+
+                        title: Text(
+                          hasProfile
+                              ? "حساب مقدم الخدمة"
+                              : "كن مزود خدمة (فني)",
+
+                          style: const TextStyle(
+                            fontFamily: 'Cairo',
+
+                            color: AppColors.primary,
+
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        subtitle: Text(
+                          hasProfile
+                              ? "إدارة الطلبات والعروض الخاصة بك"
+                              : "انضم إلينا واستقبل طلبات الصيانة",
+
+                          style: const TextStyle(
+                            fontFamily: 'Cairo',
+
+                            color: AppColors.textSecondary,
+
+                            fontSize: 11,
+                          ),
+                        ),
+
+                        trailing: const Icon(
+                          Icons.arrow_back_ios_new_rounded,
+
+                          color: AppColors.primary,
+
+                          size: 14,
+                        ),
+
+                        onTap: () async {
+                          Navigator.pop(context);
+
+                          if (hasProfile) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ProviderMainPage(),
+                              ),
+                            );
+                          } else {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ToBeProvider(),
+                              ),
+                            );
+                          }
+                        },
                       ),
-                    ),
-                    trailing: const Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      color: AppColors.primary,
-                      size: 14,
-                    ),
-
-                    onTap: () async {
-                      Navigator.pop(context);
-
-                      final providerProfile = context
-                          .read<ProviderProfileProvider>();
-
-                      final hasProfile = await providerProfile
-                          .checkProviderProfile();
-
-                      if (!context.mounted) return;
-
-                      if (hasProfile) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const ProviderMainPage(),
-                          ),
-                        );
-                      } else {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const ToBeProvider(),
-                          ),
-                        );
-                      }
-                    },
-                  ),
+                    );
+                  },
                 ),
               ),
-              SizedBox(height: 450,),
-            Padding(
+              SizedBox(height: 450),
+              Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 5.0,
                   vertical: 4.0,
@@ -251,11 +270,11 @@ class _MainPageState extends State<MainPage> {
                   ),
                   child: ListTile(
                     leading: const Icon(
-                     Icons.info_outline_rounded,
+                      Icons.info_outline_rounded,
                       color: AppColors.primary,
                     ),
                     title: const Text(
-                        "لمحة عن التطبيق",
+                      "لمحة عن التطبيق",
                       style: TextStyle(
                         fontFamily: 'Cairo',
                         color: AppColors.textPrimary,
@@ -267,103 +286,99 @@ class _MainPageState extends State<MainPage> {
                       color: AppColors.textSecondary,
                       size: 14,
                     ),
-                    onTap: () => Navigator.pop(context),
+                    onTap: () {
+                      Navigator.pop(context);
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const AboutPage()),
+                      );
+                    },
                   ),
                 ),
               ),
-             
 
               // --------------------------------------------------------
               // سبيس أو مساحة فارغة سحرية (Spacer) تدفع أي كود تحتها إلى قاع الشاشة فوراً
               const Spacer(),
               // --------------------------------------------------------
-Consumer<AuthProvider>(
-  builder: (context, authProvider, child) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        bottom: 20.0,
-      ),
-      child: Card(
-        color: const Color(
-          0xFF2A1B24,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(
-            color: Colors.redAccent.withValues(
-              alpha: 0.2,
-            ),
-            width: 1,
-          ),
-        ),
-        child: ListTile(
-          leading: authProvider.isLoggingOut
-              ? const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.redAccent,
-                  ),
-                )
-              : const Icon(
-                  Icons.logout_rounded,
-                  color: Colors.redAccent,
-                ),
-
-          title: Text(
-            authProvider.isLoggingOut
-                ? 'جاري تسجيل الخروج...'
-                : 'تسجيل الخروج',
-            style: const TextStyle(
-              fontFamily: 'Cairo',
-              color: Colors.redAccent,
-              fontWeight: FontWeight.bold,
-              fontSize: 15,
-            ),
-          ),
-
-          onTap: authProvider.isLoggingOut
-              ? null
-              : () async {
-                  Navigator.pop(context);
-
-                  final success =
-                      await authProvider.logout();
-
-                  if (!context.mounted) return;
-
-                  if (success) {
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            const LoginPage(),
+              Consumer<AuthProvider>(
+                builder: (context, authProvider, child) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 20.0),
+                    child: Card(
+                      color: const Color(0xFF2A1B24),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color: Colors.redAccent.withValues(alpha: 0.2),
+                          width: 1,
+                        ),
                       ),
-                      (route) => false,
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          authProvider.logoutError ??
-                              'فشل تسجيل الخروج',
+                      child: ListTile(
+                        leading: authProvider.isLoggingOut
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.redAccent,
+                                ),
+                              )
+                            : const Icon(
+                                Icons.logout_rounded,
+                                color: Colors.redAccent,
+                              ),
+
+                        title: Text(
+                          authProvider.isLoggingOut
+                              ? 'جاري تسجيل الخروج...'
+                              : 'تسجيل الخروج',
                           style: const TextStyle(
                             fontFamily: 'Cairo',
+                            color: Colors.redAccent,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
                           ),
                         ),
-                        backgroundColor: Colors.red,
+
+                        onTap: authProvider.isLoggingOut
+                            ? null
+                            : () async {
+                                Navigator.pop(context);
+
+                                final success = await authProvider.logout();
+
+                                if (!context.mounted) return;
+
+                                if (success) {
+                                  Navigator.pushAndRemoveUntil(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const LoginPage(),
+                                    ),
+                                    (route) => false,
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        authProvider.logoutError ??
+                                            'فشل تسجيل الخروج',
+                                        style: const TextStyle(
+                                          fontFamily: 'Cairo',
+                                        ),
+                                      ),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                              },
                       ),
-                    );
-                  }
+                    ),
+                  );
                 },
-        ),
-      ),
-    );
-  },
-),
-             
+              ),
             ],
           ),
         ),

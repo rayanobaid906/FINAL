@@ -1,3 +1,4 @@
+import 'package:fix_it/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:fix_it/app_colors.dart';
 import 'package:provider/provider.dart';
@@ -93,51 +94,107 @@ class _OtpPageState extends State<OtpPage> {
               const SizedBox(height: 30),
 
               // زر التأكيد
-              ElevatedButton(
-                onPressed: () async {
-                  final authProvider = Provider.of<AuthProvider>(
-                    context,
-                    listen: false,
-                  );
+          Consumer<AuthProvider>(
+  builder: (context, authProvider, child) {
+    return ElevatedButton(
+      onPressed: authProvider.isLoading
+          ? null
+          : () async {
+              final code = _controllers
+                  .map((controller) => controller.text)
+                  .join();
 
-                  String code = _controllers
-                      .map((controller) => controller.text)
-                      .join();
-
-                  bool success = await authProvider.verifyEmail(
-                    widget.email,
-                    code,
-                  );
-
-                  if (success) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Verification Success 🔥")),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Wrong Verification Code ❌"),
+              if (code.length != 6) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      "Please enter the full 6-digit code",
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
                       ),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    ),
+                    backgroundColor: Colors.red,
                   ),
-                ),
-                child: const Text(
-                  "Verify",
-                  style: TextStyle(
-                    fontFamily: 'Cairo',
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                );
+
+                return;
+              }
+
+              final success =
+                  await authProvider.verifyEmail(
+                widget.email,
+                code,
+              );
+
+              if (!context.mounted) return;
+
+              if (success) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      "Verification Success 🔥",
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                      ),
+                    ),
+                    backgroundColor: Colors.green,
                   ),
-                ),
+                );
+
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const LoginPage(),
+                  ),
+                  (route) => false,
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      authProvider.authError ??
+                          "Verification Failed ❌",
+                      style: const TextStyle(
+                        fontFamily: 'Cairo',
+                      ),
+                    ),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.primary,
+        padding: const EdgeInsets.symmetric(
+          vertical: 14,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+      ),
+
+      child: authProvider.isLoading
+          ? const SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2,
               ),
+            )
+          : const Text(
+              "Verify",
+              style: TextStyle(
+                fontFamily: 'Cairo',
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+    );
+  },
+),
             ],
           ),
         ),

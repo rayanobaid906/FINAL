@@ -2,6 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:fix_it/app_colors.dart';
+import 'package:fix_it/token_storage.dart';
+import 'package:fix_it/login_page.dart';
+import 'package:fix_it/main_page.dart';
+
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
 
@@ -10,36 +14,57 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
+  final TokenStorage tokenStorage = TokenStorage();
+
   @override
   void initState() {
     super.initState();
-    // منطق المؤقت (Timer): ينتظر 3 ثوانٍ ثم ينتقل للشاشة التالية
-    Timer(const Duration(seconds: 3), () {
-      // هنا سنضع اسم شاشة الـ Login لاحقاً عندما نقوم بإنشائها
-     
-      // حالياً لن ننتقل لأي مكان حتى ننتهي تماماً من هذه الشاشة
-      Navigator().push(context)
-      print("انتهت الـ 3 ثوانٍ! جاهز للانتقال للـ Login Page");
-    });
+
+    checkUser();
+  }
+
+  Future<void> checkUser() async {
+    await Future.delayed(const Duration(seconds: 3));
+
+    final token = await tokenStorage.getAccessToken();
+
+    if (!mounted) return;
+
+    if (token != null && token.isNotEmpty) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const MainPage()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+
           children: [
-            SizedBox(height: 150,),
+            const SizedBox(height: 150),
+
             Icon(
               Icons.home_repair_service_rounded,
               size: 100,
               color: AppColors.primary,
             ),
+
             const SizedBox(height: 24),
+
             const Text(
-              "repair me ",
+              "repair me",
               style: TextStyle(
                 fontFamily: 'Cairo',
                 fontSize: 28,
@@ -47,12 +72,14 @@ class _SplashPageState extends State<SplashPage> {
                 color: AppColors.textPrimary,
               ),
             ),
-            // const SizedBox(height: 48),
-            Spacer(flex: 2,),
+
+            const Spacer(flex: 2),
+
             const CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
             ),
-            SizedBox(height: 40,)
+
+            const SizedBox(height: 40),
           ],
         ),
       ),

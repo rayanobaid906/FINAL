@@ -8,8 +8,8 @@ import 'package:provider/provider.dart';
 import 'package:fix_it/providers/order_provider.dart';
 
 class CreateOrder extends StatefulWidget {
- final OrderModel? order ;
-  const CreateOrder({super.key,this.order});
+  final OrderModel? order;
+  const CreateOrder({super.key, this.order});
 
   @override
   State<CreateOrder> createState() => _CreateOrderScreenState();
@@ -17,7 +17,8 @@ class CreateOrder extends StatefulWidget {
 
 class _CreateOrderScreenState extends State<CreateOrder> {
   final _formKey = GlobalKey<FormState>();
-  bool get isEditMode => widget.order != null; //*if order null =>new order else updae torder 
+  bool get isEditMode =>
+      widget.order != null; //*if order null =>new order else updae torder
   LatLng? _selectedLocation;
 
   // String? _selectedSpecialization;
@@ -38,33 +39,27 @@ class _CreateOrderScreenState extends State<CreateOrder> {
   // bool _isLoadingSpecializations = true;
   // String? _specializationsError;
   @override
-void initState() {
-  super.initState();
+  void initState() {
+    super.initState();
 
-  final order = widget.order;
+    final order = widget.order;
 
-  if (order != null) {
-    _selectedSpecializationId = order.specializationId;
+    if (order != null) {
+      _selectedSpecializationId = order.specializationId;
 
-    _titleController.text = order.description.split('\n').first;
+      _titleController.text = order.description.split('\n').first;
 
-    _descriptionController.text =
-        order.description.contains('\n')
-            ? order.description.substring(
-                order.description.indexOf('\n') + 1,
-              )
-            : order.description;
+      _descriptionController.text = order.description.contains('\n')
+          ? order.description.substring(order.description.indexOf('\n') + 1)
+          : order.description;
 
-    _selectedLocation = LatLng(
-      order.latitude,
-      order.longitude,
-    );
+      _selectedLocation = LatLng(order.latitude, order.longitude);
+    }
+
+    Future.microtask(() {
+      context.read<OrderProvider>().getSpecializations();
+    });
   }
-
-  Future.microtask(() {
-    context.read<OrderProvider>().getSpecializations();
-  });
-}
 
   @override
   void dispose() {
@@ -449,129 +444,143 @@ void initState() {
               const SizedBox(height: 40),
 
               // 4. زر نشر الطلب النهائي بالتدرج الذهبي الفخم
-              SizedBox(
-                width: double.infinity,
-                height: 54,
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppColors.primary, Color(0xFFC69214)],
-                      begin: Alignment.topRight,
-                      end: Alignment.bottomLeft,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: ElevatedButton(
-                   onPressed: () async {
-  if (!_formKey.currentState!.validate()) {
-    return;
-  }
+              Consumer<OrderProvider>(
+                builder: (context, orderProvider, child) {
+                  final isLoading = isEditMode
+                      ? orderProvider.isUpdatingOrder
+                      : orderProvider.isCreatingOrder;
 
-  if (_selectedLocation == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'الرجاء اختيار الموقع',
-          style: TextStyle(fontFamily: 'Cairo'),
-        ),
-        backgroundColor: Colors.red,
-      ),
-    );
-    return;
-  }
-
-  final orderProvider = context.read<OrderProvider>();
-
-  final description =
-      '${_titleController.text.trim()}\n${_descriptionController.text.trim()}';
-
-  bool success;
-
-  if (isEditMode) {
-    success = await orderProvider.updateOrder(
-      orderId: widget.order!.id,
-      specializationId: _selectedSpecializationId!,
-      description: description,
-      latitude: _selectedLocation!.latitude,
-      longitude: _selectedLocation!.longitude,
-      addressText:
-          widget.order!.addressText ?? 'موقع محدد من الخريطة',
-    );
-  } else {
-    success = await orderProvider.createOrder(
-      specializationId: _selectedSpecializationId!,
-      description: description,
-      latitude: _selectedLocation!.latitude,
-      longitude: _selectedLocation!.longitude,
-      addressText: 'موقع محدد من الخريطة',
-    );
-  }
-
-  if (!mounted) return;
-
-  if (success) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          isEditMode
-              ? 'تم تعديل الطلب بنجاح'
-              : 'تم إنشاء الطلب بنجاح',
-          style: const TextStyle(fontFamily: 'Cairo'),
-        ),
-        backgroundColor: Colors.green,
-      ),
-    );
-
-    Navigator.pop(context, true);
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          isEditMode
-              ? orderProvider.updateOrderError ?? 'فشل تعديل الطلب'
-              : orderProvider.createOrderError ?? 'فشل إنشاء الطلب',
-          style: const TextStyle(fontFamily: 'Cairo'),
-        ),
-        backgroundColor: Colors.red,
-      ),
-    );
-  }
-},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors
-                          .transparent, // to make the gradient visible (شفافة)
-                      shadowColor: Colors.transparent, // لإزالة الظل الافتراضي
-
-                      shape: RoundedRectangleBorder(
+                  return SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [AppColors.primary, Color(0xFFC69214)],
+                          begin: Alignment.topRight,
+                          end: Alignment.bottomLeft,
+                        ),
                         borderRadius: BorderRadius.circular(16),
                       ),
-                    ),
-                    child: Consumer<OrderProvider>(
-                      builder: (context, orderProvider, child) {
-                        if (orderProvider.isCreatingOrder) {
-                          return const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          );
-                        }
+                      child: ElevatedButton(
+                        onPressed: isLoading
+                            ? null
+                            : () async {
+                                if (!_formKey.currentState!.validate()) {
+                                  return;
+                                }
 
-                        return const Text(
-                          'نشر الطلب الآن',
-                          style: TextStyle(
-                            fontFamily: 'Cairo',
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                                if (_selectedLocation == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'الرجاء اختيار الموقع',
+                                        style: TextStyle(fontFamily: 'Cairo'),
+                                      ),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+
+                                  return;
+                                }
+
+                                final description =
+                                    '${_titleController.text.trim()}\n'
+                                    '${_descriptionController.text.trim()}';
+
+                                bool success;
+
+                                if (isEditMode) {
+                                  success = await orderProvider.updateOrder(
+                                    orderId: widget.order!.id,
+                                    specializationId:
+                                        _selectedSpecializationId!,
+                                    description: description,
+                                    latitude: _selectedLocation!.latitude,
+                                    longitude: _selectedLocation!.longitude,
+                                    addressText:
+                                        widget.order!.addressText ??
+                                        'موقع محدد من الخريطة',
+                                  );
+                                } else {
+                                  success = await orderProvider.createOrder(
+                                    specializationId:
+                                        _selectedSpecializationId!,
+                                    description: description,
+                                    latitude: _selectedLocation!.latitude,
+                                    longitude: _selectedLocation!.longitude,
+                                    addressText: 'موقع محدد من الخريطة',
+                                  );
+                                }
+
+                                if (!mounted) return;
+
+                                if (success) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        isEditMode
+                                            ? 'تم تعديل الطلب بنجاح'
+                                            : 'تم إنشاء الطلب بنجاح',
+                                        style: const TextStyle(
+                                          fontFamily: 'Cairo',
+                                        ),
+                                      ),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+
+                                  Navigator.pop(context, true);
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        isEditMode
+                                            ? orderProvider.updateOrderError ??
+                                                  'فشل تعديل الطلب'
+                                            : orderProvider.createOrderError ??
+                                                  'فشل إنشاء الطلب',
+                                        style: const TextStyle(
+                                          fontFamily: 'Cairo',
+                                        ),
+                                      ),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                              },
+
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          disabledBackgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                        );
-                      },
+                        ),
+
+                        child: isLoading
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Text(
+                                isEditMode ? 'تعديل الطلب' : 'نشر الطلب الآن',
+                                style: const TextStyle(
+                                  fontFamily: 'Cairo',
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
             ],
           ),

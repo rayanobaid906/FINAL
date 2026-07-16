@@ -8,7 +8,8 @@ class NotificationProvider extends ChangeNotifier {
   final ApiService apiService = ApiService();
 
   List<NotificationModel> notifications = [];
-
+      //*____________________________*//
+      //*to get all the notification*//
   bool isLoadingNotifications = false;
   String? notificationsError;
 
@@ -20,7 +21,7 @@ class NotificationProvider extends ChangeNotifier {
 
       notifications = await apiService.getNotifications();
 
-      debugPrint('NOTIFICATIONS COUNT: ${notifications.length}');
+      //debugPrint('NOTIFICATIONS COUNT: ${notifications.length}');
     } on DioException catch (e) {
       debugPrint('NOTIFICATIONS STATUS: ${e.response?.statusCode}');
       debugPrint('NOTIFICATIONS DATA: ${e.response?.data}');
@@ -42,7 +43,8 @@ class NotificationProvider extends ChangeNotifier {
   int get unreadCount {
     return notifications.where((notification) => !notification.isRead).length;
   }
-
+      //*____________________________*//
+      //*this is for make notification read *//
   bool isMarkingAllAsRead = false;
   String? markAllAsReadError;
 

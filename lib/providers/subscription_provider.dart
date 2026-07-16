@@ -10,7 +10,8 @@ class SubscriptionProvider extends ChangeNotifier {
   final ApiService apiService = ApiService();
 
   List<SubscriptionPlanModel> plans = [];
-
+   //*____________________________*//
+   //* to get the suscription plan*//
   bool isLoadingPlans = false;
   String? plansError;
 
@@ -36,6 +37,10 @@ class SubscriptionProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+
+  //*____________________________*// 
+  //* this is for payment requst *//
 SubscriptionPaymentRequestModel? paymentRequest;
 
 bool isSubmittingPaymentRequest = false;
@@ -100,6 +105,9 @@ Future<bool> submitPaymentRequest({
     notifyListeners();
   }
 }
+ //*____________________________*//
+ 
+
 List<SubscriptionPaymentRequestModel> myPaymentRequests = [];
 
 bool isLoadingMyPaymentRequests = false;
@@ -115,9 +123,9 @@ Future<void> getMySubscriptionPaymentRequests() async {
     myPaymentRequests =
         await apiService.getMySubscriptionPaymentRequests();
 
-    debugPrint(
-      'MY PAYMENT REQUESTS COUNT: ${myPaymentRequests.length}',
-    );
+    // debugPrint(
+    //   'MY PAYMENT REQUESTS COUNT: ${myPaymentRequests.length}',
+ //   );
   } catch (e) {
     myPaymentRequestsError =
         'فشل تحميل طلبات الاشتراك';
@@ -130,6 +138,8 @@ Future<void> getMySubscriptionPaymentRequests() async {
     notifyListeners();
   }
 }
+//*___________________________*//
+//* to get my last subscriprion*//
 List<ProviderSubscriptionModel> mySubscriptions = [];
 
 bool isLoadingMySubscriptions = false;

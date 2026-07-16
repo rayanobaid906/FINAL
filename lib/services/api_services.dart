@@ -17,30 +17,18 @@ import 'package:fix_it/services/auth_interceptor.dart';
 class ApiService {
   final TokenStorage tokenStorage = TokenStorage(); //*this is instance of token
 
+  late final Dio dio;
 
-late final Dio dio;
+  ApiService() {
+    dio = Dio(
+      BaseOptions(
+        baseUrl: 'http://192.168.34.80:5154/api/',
+        headers: {'Content-Type': 'application/json'},
+      ),
+    );
 
-ApiService() {
-
-  dio = Dio(
-    BaseOptions(
-      baseUrl:
-          'http://192.168.1.5:5154/api/',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    ),
-  );
-
-
-  dio.interceptors.add(
-    AuthInterceptor(
-      tokenStorage: tokenStorage,
-      dio: dio,
-    ),
-  );
-
-}
+    dio.interceptors.add(AuthInterceptor(tokenStorage: tokenStorage, dio: dio));
+  }
   //*_____________________________*//
   //*this is for login endpoint*//
   Future<Response> login(String email, String password) async {
@@ -59,8 +47,9 @@ ApiService() {
 
     return response;
   }
-        //*___________________________*//
-        //* this is for refresh token*//
+
+  //*___________________________*//
+  //* this is for refresh token*//
   Future<AuthRefreshModel> refreshToken(String refreshToken) async {
     final response = await dio.post(
       'Auth/refresh',
@@ -118,7 +107,7 @@ ApiService() {
     //*that mean the dio return data in list dynamic and i change it into model type
     final List<dynamic> data = response.data;
 
-    return data //*to change form
+    return data //*to change from dynamic into object
         .map(
           (item) => SpecializationModel.fromJson(item as Map<String, dynamic>),
         )
@@ -200,6 +189,8 @@ ApiService() {
     return ProviderProfileModel.fromJson(response.data as Map<String, dynamic>);
   }
 
+  //*____________________________*//
+  //*this is for cerate profile account *//
   Future<Response> createProviderProfile({
     required int specializationId,
     String? bio,
@@ -250,6 +241,8 @@ ApiService() {
         .toList();
   }
 
+  //*_____________________________*//
+  //* to get subscription plan *//
   Future<List<SubscriptionPlanModel>> getSubscriptionPlans() async {
     final response = await dio.get('subscription-plans');
 
@@ -263,6 +256,8 @@ ApiService() {
         .toList();
   }
 
+  //*_____________________________*//
+  //*to create subscribtion requast*//
   Future<SubscriptionPaymentRequestModel> createSubscriptionPaymentRequest({
     required int subscriptionPlanId,
     required String transactionId,
@@ -298,6 +293,8 @@ ApiService() {
         .toList();
   }
 
+  //*________________________________*//
+  //* to get my subscripein *//
   Future<List<ProviderSubscriptionModel>> getMyProviderSubscriptions() async {
     final response = await dio.get('provider-subscriptions/me');
 
@@ -399,25 +396,12 @@ ApiService() {
   }
 
   //*____________________________*//
-  //*this is for ratiend the order after compleated*//
+  //*this is for ratieng the order after compleated*//
   Future<void> createRating({required int orderId, required int value}) async {
     await dio.post('ratings', data: {'orderId': orderId, 'value': value});
   }
-
-  Future<List<NotificationModel>> getNotifications() async {
-    final response = await dio.get('notifications');
-
-    final List data = response.data as List;
-
-    return data
-        .map((e) => NotificationModel.fromJson(e as Map<String, dynamic>))
-        .toList();
-  }
-
-  Future<void> markAllNotificationsAsRead() async {
-    await dio.patch('notifications/read-all');
-  }
-
+    //*____________________________*//
+    //*this is for get all the rateing*//
   Future<RatingSummaryModel> getProviderRatingSummary(
     int providerProfileId,
   ) async {
@@ -427,6 +411,24 @@ ApiService() {
 
     return RatingSummaryModel.fromJson(response.data as Map<String, dynamic>);
   }
+
+          //*____________________________*//
+          //*this is for git notification *//
+  Future<List<NotificationModel>> getNotifications() async {
+    final response = await dio.get('notifications');
+
+    final List data = response.data as List;
+
+    return data
+        .map((e) => NotificationModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+      //*____________________________*//
+      //*this is for make notification read all *//
+  Future<void> markAllNotificationsAsRead() async {
+    await dio.patch('notifications/read-all');
+  }
+
 
   Future<CompletionQrModel> generateCompletionQr(int orderId) async {
     final response = await dio.post('orders/$orderId/completion-qr');

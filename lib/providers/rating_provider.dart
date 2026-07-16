@@ -4,10 +4,11 @@ import 'package:fix_it/services/api_services.dart';
 
 class RatingProvider extends ChangeNotifier {
   final ApiService apiService = ApiService();
-
+   //*____________________________*//
+   //* this is for create rateing for provider *//
   bool isSubmittingRating = false;
   String? ratingError;
-
+   
   Future<bool> createRating({
     required int orderId,
     required int value,

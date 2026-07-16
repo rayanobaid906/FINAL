@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'package:fix_it/app_colors.dart';
 import 'package:fix_it/providers/order_provider.dart';
 import 'package:fix_it/create_order.dart';
@@ -30,10 +31,15 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+
       appBar: AppBar(
+        iconTheme: const IconThemeData(
+          color: Colors.white, // لون زر الرجوع
+        ),
         backgroundColor: AppColors.background,
         elevation: 0,
         centerTitle: true,
+
         title: const Text(
           'تفاصيل الطلب',
           style: TextStyle(
@@ -43,6 +49,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           ),
         ),
       ),
+
       body: Consumer<OrderProvider>(
         builder: (context, orderProvider, child) {
           if (orderProvider.isLoadingOrderDetails) {
@@ -74,18 +81,25 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
+
             child: Container(
               width: double.infinity,
+
               padding: const EdgeInsets.all(18),
+
               decoration: BoxDecoration(
                 color: AppColors.surface,
+
                 borderRadius: BorderRadius.circular(18),
               ),
+
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+
                 children: [
                   Text(
                     order.specializationName,
+
                     style: const TextStyle(
                       fontFamily: 'Cairo',
                       fontSize: 20,
@@ -93,281 +107,390 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                       color: AppColors.primary,
                     ),
                   ),
+
                   const SizedBox(height: 16),
+
                   Text(
                     order.description,
+
                     style: const TextStyle(
                       fontFamily: 'Cairo',
                       fontSize: 14,
                       color: AppColors.textPrimary,
                     ),
                   ),
+
                   const SizedBox(height: 16),
+
                   Text(
                     'العنوان: ${order.addressText ?? "غير محدد"}',
+
                     style: const TextStyle(
                       fontFamily: 'Cairo',
                       color: AppColors.textSecondary,
                     ),
                   ),
+
                   const SizedBox(height: 8),
+
                   Text(
                     'رقم الطلب: ${order.id}',
+
                     style: const TextStyle(
                       fontFamily: 'Cairo',
                       color: AppColors.textSecondary,
                     ),
                   ),
+
                   const SizedBox(height: 8),
+
                   Text(
                     'الحالة: ${order.status}',
+
                     style: const TextStyle(
                       fontFamily: 'Cairo',
                       color: AppColors.primary,
                     ),
                   ),
+
                   const SizedBox(height: 24),
 
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: Consumer<OrderProvider>(
-                      builder: (context, orderProvider, child) {
-                        return ElevatedButton(
-                          onPressed: orderProvider.isCancellingOrder
-                              ? null
-                              : () async {
-                                  final confirm = await showDialog<bool>(
-                                    context: context,
-                                    builder: (context) {
-                                      return AlertDialog(
-                                        title: const Text(
-                                          'تأكيد الإلغاء',
-                                          style: TextStyle(fontFamily: 'Cairo'),
-                                        ),
-                                        content: const Text(
-                                          'هل أنت متأكد أنك تريد إلغاء هذا الطلب؟',
-                                          style: TextStyle(fontFamily: 'Cairo'),
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () {
-                                              Navigator.pop(context, false);
-                                            },
-                                            child: const Text('لا'),
-                                          ),
-                                          TextButton(
-                                            onPressed: () {
-                                              Navigator.pop(context, true);
-                                            },
-                                            child: const Text('نعم، إلغاء'),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  );
-
-                                  if (confirm != true) return;
-
-                                  final success = await context
-                                      .read<OrderProvider>()
-                                      .cancelOrder(order.id);
-
-                                  if (!context.mounted) return;
-
-                                  if (success) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'تم إلغاء الطلب بنجاح',
-                                          style: TextStyle(fontFamily: 'Cairo'),
-                                        ),
-                                        backgroundColor: Colors.green,
-                                      ),
-                                    );
-
-                                    Navigator.pop(context, true);
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          orderProvider.cancelOrderError ??
-                                              'فشل إلغاء الطلب',
-                                          style: const TextStyle(
-                                            fontFamily: 'Cairo',
-                                          ),
-                                        ),
-                                        backgroundColor: Colors.red,
-                                      ),
-                                    );
-                                  }
-                                },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.redAccent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                          child: orderProvider.isCancellingOrder
-                              ? const SizedBox(
-                                  width: 22,
-                                  height: 22,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Text(
-                                  'إلغاء الطلب',
-                                  style: TextStyle(
-                                    fontFamily: 'Cairo',
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                        );
-                      },
-                    ),
-                  ),
-                  SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton.icon(
-                    onPressed: () async {
-  await Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (_) => OrderOffersPage(
-        orderId: order.id,
-      ),
-    ),
-  );
-
-  if (!context.mounted) return;
-
-  await context
-      .read<OrderProvider>()
-      .getOrderById(order.id);
-},
-                      icon: const Icon(Icons.local_offer_rounded),
-                      label: const Text(
-                        'مشاهدة العروض',
-                        style: TextStyle(
-                          fontFamily: 'Cairo',
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton.icon(
-                      onPressed: () async {
-                        final result = await Navigator.push<bool>(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => CreateOrder(order: order),
-                          ),
-                        );
-
-                        if (result == true && context.mounted) {
-                          context.read<OrderProvider>().getOrderById(order.id);
-                        }
-                      },
-
-                      icon: const Icon(Icons.edit_rounded),
-                      label: const Text(
-                        'تعديل الطلب',
-                        style: TextStyle(
-                          fontFamily: 'Cairo',
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                    ),
-                  ),
-
-
-
-                   if (order.status == 2) ...[
-  const SizedBox(height: 12),
-
-  SizedBox(
-    width: double.infinity,
-    height: 50,
-    child: ElevatedButton.icon(
-      onPressed: () async {
-        final result = await Navigator.push<bool>(
-          context,
-          MaterialPageRoute(
-            builder: (_) => CompletionQrPage(
-              orderId: order.id,
-            ),
-          ),
-        );
-
-        if (result == true && context.mounted) {
-          await context
-              .read<OrderProvider>()
-              .getOrderById(order.id);
-        }
-      },
-      icon: const Icon(
-        Icons.qr_code_2_rounded,
-      ),
-      label: const Text(
-        'إنهاء الطلب وإنشاء QR',
-        style: TextStyle(
-          fontFamily: 'Cairo',
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
-      ),
-    ),
-  ),
-],
-
-
-
-
-
-
-
-
-
-                  if (order.status == 4) ...[
-                    const SizedBox(height: 12),
-
+                  // =====================================
+                  // OPEN ORDER
+                  // status = 0
+                  // =====================================
+                  if (order.status == 0) ...[
+                    // Cancel Order
                     SizedBox(
                       width: double.infinity,
                       height: 50,
+
+                      child: ElevatedButton(
+                        onPressed: orderProvider.isCancellingOrder
+                            ? null
+                            : () async {
+                                final confirm = await showDialog<bool>(
+                                  context: context,
+
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      title: const Text(
+                                        'تأكيد الإلغاء',
+
+                                        style: TextStyle(fontFamily: 'Cairo'),
+                                      ),
+
+                                      content: const Text(
+                                        'هل أنت متأكد أنك تريد إلغاء هذا الطلب؟',
+
+                                        style: TextStyle(fontFamily: 'Cairo'),
+                                      ),
+
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context, false);
+                                          },
+
+                                          child: const Text('لا'),
+                                        ),
+
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context, true);
+                                          },
+
+                                          child: const Text('نعم، إلغاء'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+
+                                if (confirm != true) {
+                                  return;
+                                }
+
+                                final success = await orderProvider.cancelOrder(
+                                  order.id,
+                                );
+
+                                if (!context.mounted) {
+                                  return;
+                                }
+
+                                if (success) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'تم إلغاء الطلب بنجاح',
+
+                                        style: TextStyle(fontFamily: 'Cairo'),
+                                      ),
+
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+
+                                  Navigator.pop(context, true);
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        orderProvider.cancelOrderError ??
+                                            'فشل إلغاء الطلب',
+
+                                        style: const TextStyle(
+                                          fontFamily: 'Cairo',
+                                        ),
+                                      ),
+
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                              },
+
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.redAccent,
+
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+
+                        child: orderProvider.isCancellingOrder
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                'إلغاء الطلب',
+
+                                style: TextStyle(
+                                  fontFamily: 'Cairo',
+
+                                  fontWeight: FontWeight.bold,
+
+                                  color: Colors.white,
+                                ),
+                              ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Offers Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          await Navigator.push(
+                            context,
+
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  OrderOffersPage(orderId: order.id),
+                            ),
+                          );
+
+                          if (!context.mounted) {
+                            return;
+                          }
+
+                          await context.read<OrderProvider>().getOrderById(
+                            order.id,
+                          );
+                        },
+
+                        icon: const Icon(Icons.local_offer_rounded),
+
+                        label: const Text(
+                          'مشاهدة العروض',
+
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+
+                          foregroundColor: Colors.white,
+
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Edit Order
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+
                       child: ElevatedButton.icon(
                         onPressed: () async {
                           final result = await Navigator.push<bool>(
                             context,
+
+                            MaterialPageRoute(
+                              builder: (_) => CreateOrder(order: order),
+                            ),
+                          );
+
+                          if (result == true && context.mounted) {
+                            await context.read<OrderProvider>().getOrderById(
+                              order.id,
+                            );
+                          }
+                        },
+
+                        icon: const Icon(Icons.edit_rounded),
+
+                        label: const Text(
+                          'تعديل الطلب',
+
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+
+                          foregroundColor: Colors.white,
+
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  // =====================================
+                  // IN PROGRESS
+                  // status = 2
+                  // =====================================
+                  if (order.status == 2) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          final result = await Navigator.push<bool>(
+                            context,
+
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  CompletionQrPage(orderId: order.id),
+                            ),
+                          );
+
+                          if (result == true && context.mounted) {
+                            await context.read<OrderProvider>().getOrderById(
+                              order.id,
+                            );
+                          }
+                        },
+
+                        icon: const Icon(Icons.qr_code_2_rounded),
+
+                        label: const Text(
+                          'إنهاء الطلب وإنشاء QR',
+
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+
+                          foregroundColor: Colors.white,
+
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  // =====================================
+                  // COMPLETION PENDING
+                  // status = 3
+                  // =====================================
+                  if (order.status == 3) ...[
+                    Container(
+                      width: double.infinity,
+
+                      padding: const EdgeInsets.all(16),
+
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+
+                      child: const Row(
+                        children: [
+                          Icon(
+                            Icons.hourglass_top_rounded,
+
+                            color: AppColors.primary,
+                          ),
+
+                          SizedBox(width: 10),
+
+                          Expanded(
+                            child: Text(
+                              'بانتظار مقدم الخدمة لمسح رمز QR وإكمال الطلب',
+
+                              style: TextStyle(
+                                fontFamily: 'Cairo',
+
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+
+                  // =====================================
+                  // COMPLETED
+                  // status = 4
+                  // =====================================
+                  if (order.status == 4) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          final result = await Navigator.push<bool>(
+                            context,
+
                             MaterialPageRoute(
                               builder: (_) => RatingPage(orderId: order.id),
                             ),
@@ -378,24 +501,33 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                               const SnackBar(
                                 content: Text(
                                   'تم حفظ تقييمك',
+
                                   style: TextStyle(fontFamily: 'Cairo'),
                                 ),
+
                                 backgroundColor: Colors.green,
                               ),
                             );
                           }
                         },
+
                         icon: const Icon(Icons.star_rounded),
+
                         label: const Text(
                           'تقييم مقدم الخدمة',
+
                           style: TextStyle(
                             fontFamily: 'Cairo',
+
                             fontWeight: FontWeight.bold,
                           ),
                         ),
+
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
+
                           foregroundColor: Colors.white,
+
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
