@@ -42,6 +42,7 @@ class _MySubscriptionRequestsPageState
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+          iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: AppColors.background,
         elevation: 0,
         centerTitle: true,

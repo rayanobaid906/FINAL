@@ -12,6 +12,17 @@ class ProviderProfileProvider extends ChangeNotifier {
   profile; //*to save my profile this is helpfull to method 2
   bool isLoading = false;
   String? errorMessage;
+
+  void reset() {
+    hasProviderProfile = false;
+    profile = null;
+    isLoading = false;
+    errorMessage = null;
+    createProfileError = null;
+    subscriptionStatus = null;
+    ratingSummary = null;
+    notifyListeners();
+  }
   //*____________________________*//
   //*to get my provider profile *//
   Future<bool> checkProviderProfile() async {
@@ -64,6 +75,7 @@ class ProviderProfileProvider extends ChangeNotifier {
       );
 
       profile = await apiService.getMyProviderProfile();
+      hasProviderProfile = true;
 
       return true;
     } catch (e) {

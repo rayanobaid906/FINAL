@@ -27,8 +27,10 @@ class _CompletionQrPageState extends State<CompletionQrPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+       
       backgroundColor: AppColors.background,
       appBar: AppBar(
+          iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: AppColors.background,
         elevation: 0,
         centerTitle: true,

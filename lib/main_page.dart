@@ -9,7 +9,6 @@ import 'package:fix_it/to_be_provider.dart';
 import 'package:fix_it/order_situation.dart';
 import 'package:provider/provider.dart';
 import 'package:fix_it/notification_page.dart';
-import 'package:provider/provider.dart';
 import 'package:fix_it/providers/auth_provider.dart';
 import 'package:fix_it/login_page.dart';
 // import 'package:google_nav_bar/google_nav_bar.dart';
@@ -26,6 +25,14 @@ class _MainPageState extends State<MainPage> {
   bool isDarkMode = true;
   int _selectedIndex = 0;
   List<Widget> get _pages => [const HomePage(), const OrderSituations()];
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(
+      () => context.read<ProviderProfileProvider>().checkProviderProfile(),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -236,18 +243,32 @@ class _MainPageState extends State<MainPage> {
                         onTap: () async {
                           Navigator.pop(context);
 
-                          if (hasProfile) {
+                          final profileProvider =
+                              context.read<ProviderProfileProvider>();
+                          final profileExists =
+                              await profileProvider.checkProviderProfile();
+
+                          if (!context.mounted) return;
+
+                          if (profileExists) {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (_) => const ProviderMainPage(),
                               ),
                             );
-                          } else {
+                          } else if (profileProvider.errorMessage == null) {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (_) => const ToBeProvider(),
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(profileProvider.errorMessage!),
+                                backgroundColor: Colors.red,
                               ),
                             );
                           }
@@ -352,6 +373,9 @@ class _MainPageState extends State<MainPage> {
                                 if (!context.mounted) return;
 
                                 if (success) {
+                                  context
+                                      .read<ProviderProfileProvider>()
+                                      .reset();
                                   Navigator.pushAndRemoveUntil(
                                     context,
                                     MaterialPageRoute(

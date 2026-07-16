@@ -27,6 +27,7 @@ class _SubscriptionPlansPageState extends State<SubscriptionPlansPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+          iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: AppColors.background,
         centerTitle: true,
         title: const Text(

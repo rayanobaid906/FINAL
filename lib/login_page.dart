@@ -6,7 +6,7 @@ import 'package:fix_it/app_colors.dart';
 import 'package:fix_it/custom_textfiled.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
-import 'package:fix_it/token_storage.dart';
+import 'package:fix_it/providers/provider_profile_provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -190,6 +190,8 @@ class _LoginPageState extends State<LoginPage> {
 
                             // 3) Result
                             if (success) {
+                              context.read<ProviderProfileProvider>().reset();
+
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text(
@@ -202,14 +204,13 @@ class _LoginPageState extends State<LoginPage> {
                               );
 
                               // هنا بعد النجاح تذهب للـ MainPage
-                              
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const MainPage(),
-                  ),
-                );
-                
+
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const MainPage(),
+                                ),
+                              );
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(

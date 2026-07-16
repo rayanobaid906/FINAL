@@ -30,6 +30,7 @@ class _MyProviderSubscriptionsPageState
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+          iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: AppColors.background,
         centerTitle: true,
         title: const Text(
@@ -108,6 +109,7 @@ class _MyProviderSubscriptionsPageState
                       'السعر: ${subscription.planPrice}',
                       style: const TextStyle(
                         fontFamily: 'Cairo',
+                        color: Colors.blue
                       ),
                     ),
 
@@ -115,6 +117,7 @@ class _MyProviderSubscriptionsPageState
                       'المدة: ${subscription.durationInDays} يوم',
                       style: const TextStyle(
                         fontFamily: 'Cairo',
+                        color: Colors.blue
                       ),
                     ),
 
@@ -122,6 +125,7 @@ class _MyProviderSubscriptionsPageState
                       'ينتهي في: ${subscription.endsAt}',
                       style: const TextStyle(
                         fontFamily: 'Cairo',
+                        color: Colors.blue
                       ),
                     ),
 
