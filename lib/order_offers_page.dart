@@ -28,6 +28,7 @@ class _OrderOffersPageState extends State<OrderOffersPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        iconTheme: IconThemeData(color: Colors.white),
         backgroundColor: AppColors.background,
         elevation: 0,
         centerTitle: true,

@@ -1,3 +1,4 @@
+import 'package:fix_it/camera_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fix_it/app_colors.dart';
@@ -111,19 +112,19 @@ class _ProviderAssignedOrdersPageState
         if (order.status == 3) ...[
           const SizedBox(height: 14),
 
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton.icon(
-              onPressed: () async {
-                final result = await Navigator.push<bool>(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => QrScannerPage(
-                      orderId: order.id,
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  final result = await Navigator.push<bool>(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => CameraPage(
+                        // orderId: order.id,
+                      ),
                     ),
-                  ),
-                );
+                  );
 
                 if (result == true && context.mounted) {
                   await context

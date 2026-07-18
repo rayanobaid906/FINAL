@@ -22,7 +22,7 @@ class ApiService {
   ApiService() {
     dio = Dio(
       BaseOptions(
-        baseUrl: 'http://192.168.34.80:5154/api/',
+        baseUrl: 'http://192.168.1.105:5154/api/',
         headers: {'Content-Type': 'application/json'},
       ),
     );

@@ -12,7 +12,7 @@ import 'package:fix_it/home_page.dart';
 import 'package:fix_it/providers/offer_provider.dart';
 import 'package:fix_it/providers/rating_provider.dart';
 import 'package:fix_it/providers/notification_provider.dart';
-
+import 'package:fix_it/otp_page.dart';
 void main() {
   runApp(
     MultiProvider(
@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: (SplashPage()),
+      home: ((SplashPage())),
 
       routes: {
         '/login': (context) => const LoginPage(),

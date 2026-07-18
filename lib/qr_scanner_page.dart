@@ -1,23 +1,29 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-class QrScannerPage extends StatefulWidget {
-  final int orderId;
+class CameraService {
+  static const MethodChannel _channel =
+      MethodChannel('fixit/camera');
 
-  const QrScannerPage({super.key, required this.orderId});
+  static Future<bool> openCamera() async {
+    try {
+      final result =
+          await _channel.invokeMethod<bool>(
+        'openCamera',
+      );
 
-  @override
-  State<QrScannerPage> createState() => _QrScannerPageState();
-}
+      return result ?? false;
+    } on PlatformException catch (e) {
+      print(
+        'OPEN CAMERA PLATFORM ERROR: ${e.message}',
+      );
 
-class _QrScannerPageState extends State<QrScannerPage> {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(title: Text("this is for scanner")),
-        body: Center(child: Text("this is for scanner")),
-      ),
-    );
+      return false;
+    } catch (e) {
+      print(
+        'OPEN CAMERA UNKNOWN ERROR: $e',
+      );
+
+      return false;
+    }
   }
 }
-  
